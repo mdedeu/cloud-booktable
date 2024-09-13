@@ -33,6 +33,8 @@ export default function MobileFriendlyCustomerBooking() {
         const formData = new FormData(e.currentTarget)
         const bookingData = Object.fromEntries(formData)
         console.log("Booking submitted:", bookingData)
+        //fetch js here to backend
+
         setTimeout(() => {
             setIsLoading(false)
             setBookingComplete(true)
@@ -58,12 +60,12 @@ export default function MobileFriendlyCustomerBooking() {
                         <form onSubmit={handleSubmit} className="space-y-4 p-4 md:p-6">
                             <div className="space-y-2">
                                 <Label htmlFor="name" className="text-sm font-medium text-gray-700">Name</Label>
-                                <Input id="name" name="name" required className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-teal-500 focus:border-teal-500" />
+                                <Input id="name" name="name" required className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-teal-500 focus:border-teal-500 text-muted-foreground" />
                             </div>
 
                             <div className="space-y-2">
                                 <Label htmlFor="email" className="text-sm font-medium text-gray-700">Email</Label>
-                                <Input id="email" name="email" type="email" required className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-teal-500 focus:border-teal-500" />
+                                <Input id="email" name="email" type="email" required className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-teal-500 focus:border-teal-500 text-muted-foreground" />
                             </div>
 
                             <div className="space-y-2">
@@ -72,7 +74,7 @@ export default function MobileFriendlyCustomerBooking() {
                                     <PopoverTrigger asChild>
                                         <Button
                                             variant={"outline"}
-                                            className={`w-full justify-start text-left font-normal ${!date && "text-muted-foreground"}`}
+                                            className={`w-full justify-start text-left font-normal text-muted-foreground`}
                                         >
                                             <CalendarIcon className="mr-2 h-4 w-4" />
                                             {date ? format(date, "PPP") : "Pick a date"}
@@ -94,8 +96,8 @@ export default function MobileFriendlyCustomerBooking() {
                                 <div className="relative">
                                     <ClockIcon className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" />
                                     <Select name="time" required>
-                                        <SelectTrigger className="w-full pl-10 pr-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-teal-500 focus:border-teal-500">
-                                            <SelectValue placeholder="Select a time" />
+                                        <SelectTrigger className={`w-full pl-10 pr-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-teal-500 focus:border-teal-500 text-muted-foreground`}>
+                                            <SelectValue placeholder="Select a time"/>
                                         </SelectTrigger>
                                         <SelectContent>
                                             {availableTimes.map(time => (
@@ -111,7 +113,7 @@ export default function MobileFriendlyCustomerBooking() {
                                 <div className="relative">
                                     <UsersIcon className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" />
                                     <Select name="guests" required>
-                                        <SelectTrigger className="w-full pl-10 pr-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-teal-500 focus:border-teal-500">
+                                        <SelectTrigger className="w-full pl-10 pr-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-teal-500 focus:border-teal-500 text-muted-foreground">
                                             <SelectValue placeholder="Select number of guests" />
                                         </SelectTrigger>
                                         <SelectContent>
@@ -128,7 +130,7 @@ export default function MobileFriendlyCustomerBooking() {
                                 <div className="relative">
                                     <UtensilsIcon className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" />
                                     <Select name="table" required>
-                                        <SelectTrigger className="w-full pl-10 pr-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-teal-500 focus:border-teal-500">
+                                        <SelectTrigger className="w-full pl-10 pr-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-teal-500 focus:border-teal-500 text-muted-foreground">
                                             <SelectValue placeholder="Select a table" />
                                         </SelectTrigger>
                                         <SelectContent>
