@@ -22,6 +22,12 @@ async def create_table():
 async def update_table_availability():
     return {"message": "Table updated"}
 
+
 @app.post("/table/{table_id}/reservation")
 async def create_reservation():
     return {"message": "Reservation created"}
+
+
+@app.get("/table/reservations")
+async def get_reservations():
+    return {"message": "Reservations"}
