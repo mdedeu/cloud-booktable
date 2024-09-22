@@ -7,11 +7,9 @@ class TableService {
 
     async getTables() {
         const response = await fetch(this.url);
-        return await response.json();
-    }
-
-    async getTable(id) {
-        const response = await fetch(`${this.url}/${id}`);
+        if (!response.ok) {
+            throw new Error('Failed to fetch tables');
+        }
         return await response.json();
     }
 

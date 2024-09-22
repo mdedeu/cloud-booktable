@@ -1,49 +1,115 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { motion, AnimatePresence } from "framer-motion"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-import { CalendarIcon, ClockIcon, UsersIcon, UtensilsIcon, CheckCircle } from "lucide-react"
-import { format } from "date-fns"
+import { CalendarIcon, ClockIcon, UsersIcon, CheckCircle, Loader2 } from "lucide-react"
+import { format, parse, isSameDay } from "date-fns"
 import { Calendar } from "@/components/ui/calendar"
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover"
+import { toast, ToastContainer } from 'react-toastify'
+import 'react-toastify/dist/ReactToastify.css'
+import {tableService} from "@/lib/table_service";
+import {reservationService} from "@/lib/reservation_service";
 
-export default function MobileFriendlyCustomerBooking() {
-    const [availableTables, setAvailableTables] = useState([
-        { id: 1, capacity: 2 },
-        { id: 2, capacity: 4 },
-        { id: 3, capacity: 6 },
-    ])
+interface TableAvailability {
+    date: string;
+    times: {
+        [key: string]: boolean;
+    };
+}
 
-    const [isLoading, setIsLoading] = useState(false)
+interface Table {
+    id: number;
+    capacity: number;
+    availability: TableAvailability[];
+}
+
+export default function IntegratedCustomerBooking() {
+    const [tables, setTables] = useState<Table[]>([])
+    const [isLoading, setIsLoading] = useState(true)
     const [bookingComplete, setBookingComplete] = useState(false)
-    const [date, setDate] = useState<Date>()
+    const [date, setDate] = useState<Date | undefined>(undefined)
+    const [availableDates, setAvailableDates] = useState<Date[]>([])
+    const [availableTimes, setAvailableTimes] = useState<string[]>([])
+    const [selectedTable, setSelectedTable] = useState<number | null>(null)
 
-    // Available time slots
-    const availableTimes = [
-        "18:00", "18:30", "19:00", "19:30", "20:00", "20:30", "21:00", "21:30"
-    ]
+    useEffect(() => {
+        fetchTables()
+    }, [])
 
-    const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
+    const fetchTables = async () => {
+        setIsLoading(true)
+        try {
+            const fetchedTables = await tableService.getTables()
+            setTables(fetchedTables)
+            const dates = Array.from(new Set(fetchedTables.flatMap(table =>
+                table.availability.map(slot => parse(slot.date, 'yyyy-MM-dd', new Date()))
+            )))
+            setAvailableDates(dates)
+        } catch (error) {
+            toast.error("Failed to fetch tables")
+        } finally {
+            setIsLoading(false)
+        }
+    }
+
+    const handleDateChange = (newDate: Date | undefined) => {
+        setDate(newDate)
+        setSelectedTable(null)
+        if (newDate) {
+            const formattedDate = format(newDate, 'yyyy-MM-dd')
+            const times = Array.from(new Set(tables.flatMap(table =>
+                table.availability
+                    .find(slot => slot.date === formattedDate)?.times || {}
+            )))
+            setAvailableTimes(Object.keys(times).filter(time => times[time]))
+        } else {
+            setAvailableTimes([])
+        }
+    }
+
+    const handleTimeChange = (time: string) => {
+        if (date) {
+            const formattedDate = format(date, 'yyyy-MM-dd')
+            const availableTablesForDateTime = tables.filter(table =>
+                table.availability.some(slot =>
+                    slot.date === formattedDate && slot.times[time]
+                )
+            )
+            if (availableTablesForDateTime.length > 0) {
+                setSelectedTable(availableTablesForDateTime[0].id)
+            }
+        }
+    }
+
+    const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
         e.preventDefault()
         setIsLoading(true)
         const formData = new FormData(e.currentTarget)
-        const bookingData = Object.fromEntries(formData)
-        console.log("Booking submitted:", bookingData)
-        //fetch js here to backend
+        const bookingData = {
+            ...Object.fromEntries(formData),
+            date: date ? format(date, 'yyyy-MM-dd') : '',
+            tableId: selectedTable
+        }
 
-
-        setTimeout(() => {
-            setIsLoading(false)
+        try {
+            await reservationService.createReservation(bookingData)
             setBookingComplete(true)
-        }, 2000)
+            toast.success("Reservation created successfully!")
+        } catch (error) {
+            toast.error("Failed to create reservation")
+        } finally {
+            setIsLoading(false)
+        }
     }
 
     return (
         <div className="min-h-screen bg-gradient-to-br from-teal-600 to-emerald-700 flex items-center justify-center p-4">
+            <ToastContainer position="top-right" autoClose={3000} hideProgressBar={false} newestOnTop={false} closeOnClick rtl={false} pauseOnFocusLoss draggable pauseOnHover />
             <AnimatePresence>
                 {!bookingComplete ? (
                     <motion.div
@@ -74,8 +140,8 @@ export default function MobileFriendlyCustomerBooking() {
                                 <Popover>
                                     <PopoverTrigger asChild>
                                         <Button
-                                            variant={"outline"}
-                                            className={`w-full justify-start text-left font-normal text-muted-foreground`}
+                                            variant="outline"
+                                            className={`w-full justify-start text-left font-normal ${!date && "text-muted-foreground"}`}
                                         >
                                             <CalendarIcon className="mr-2 h-4 w-4" />
                                             {date ? format(date, "PPP") : "Pick a date"}
@@ -85,7 +151,12 @@ export default function MobileFriendlyCustomerBooking() {
                                         <Calendar
                                             mode="single"
                                             selected={date}
-                                            onSelect={setDate}
+                                            onSelect={handleDateChange}
+                                            disabled={(date) =>
+                                                !availableDates.some(availableDate =>
+                                                    isSameDay(availableDate, date)
+                                                )
+                                            }
                                             initialFocus
                                         />
                                     </PopoverContent>
@@ -96,7 +167,7 @@ export default function MobileFriendlyCustomerBooking() {
                                 <Label htmlFor="time" className="text-sm font-medium text-gray-700">Time</Label>
                                 <div className="relative">
                                     <ClockIcon className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" />
-                                    <Select name="time" required>
+                                    <Select name="time" required onValueChange={handleTimeChange}>
                                         <SelectTrigger className={`w-full pl-10 pr-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-teal-500 focus:border-teal-500 text-muted-foreground`}>
                                             <SelectValue placeholder="Select a time"/>
                                         </SelectTrigger>
@@ -126,32 +197,9 @@ export default function MobileFriendlyCustomerBooking() {
                                 </div>
                             </div>
 
-                            <div className="space-y-2">
-                                <Label htmlFor="table" className="text-sm font-medium text-gray-700">Table</Label>
-                                <div className="relative">
-                                    <UtensilsIcon className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" />
-                                    <Select name="table" required>
-                                        <SelectTrigger className="w-full pl-10 pr-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-teal-500 focus:border-teal-500 text-muted-foreground">
-                                            <SelectValue placeholder="Select a table" />
-                                        </SelectTrigger>
-                                        <SelectContent>
-                                            {availableTables.map(table => (
-                                                <SelectItem key={table.id} value={table.id.toString()}>
-                                                    Table {table.id} (Capacity: {table.capacity})
-                                                </SelectItem>
-                                            ))}
-                                        </SelectContent>
-                                    </Select>
-                                </div>
-                            </div>
-
-                            <Button type="submit" className="w-full bg-teal-600 hover:bg-teal-700 text-white font-bold py-3 px-4 rounded-md transition-all duration-300 ease-in-out focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-teal-500" disabled={isLoading}>
+                            <Button type="submit" className="w-full bg-teal-600 hover:bg-teal-700 text-white font-bold py-3 px-4 rounded-md transition-all duration-300 ease-in-out focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-teal-500" disabled={isLoading || !selectedTable}>
                                 {isLoading ? (
-                                    <motion.div
-                                        className="h-5 w-5 rounded-full border-t-2 border-r-2 border-white"
-                                        animate={{ rotate: 360 }}
-                                        transition={{ duration: 1, repeat: Infinity, ease: "linear" }}
-                                    />
+                                    <Loader2 className="h-5 w-5 animate-spin" />
                                 ) : (
                                     "Confirm Reservation"
                                 )}
@@ -168,7 +216,12 @@ export default function MobileFriendlyCustomerBooking() {
                         <CheckCircle className="w-12 h-12 md:w-16 md:h-16 text-teal-600 mx-auto mb-4" />
                         <h2 className="text-xl md:text-2xl font-bold text-gray-800 mb-2">Booking Confirmed!</h2>
                         <p className="text-gray-600 mb-4 text-sm md:text-base">Thank you for choosing La Belle Époque. We look forward to serving you.</p>
-                        <Button onClick={() => setBookingComplete(false)} className="bg-teal-600 hover:bg-teal-700 text-white">
+                        <Button onClick={() => {
+                            setBookingComplete(false)
+                            setDate(undefined)
+                            setSelectedTable(null)
+                            setAvailableTimes([])
+                        }} className="bg-teal-600 hover:bg-teal-700 text-white">
                             Make Another Reservation
                         </Button>
                     </motion.div>
