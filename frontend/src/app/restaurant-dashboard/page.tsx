@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { motion } from "framer-motion"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
@@ -8,105 +8,124 @@ import { Label } from "@/components/ui/label"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
-import { ClipboardIcon, PlusIcon, CheckIcon, XIcon, AlertCircle, CalendarIcon } from "lucide-react"
+import { ClipboardIcon, PlusIcon, CheckIcon, XIcon, AlertCircle, CalendarIcon, Loader2 } from "lucide-react"
 import { toast, ToastContainer } from 'react-toastify'
 import 'react-toastify/dist/ReactToastify.css'
-import { format, addDays } from 'date-fns'
+import { format } from 'date-fns'
 import { Calendar } from "@/components/ui/calendar"
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover"
+import {tableService} from "@/lib/table_service";
+import {reservationService} from "@/lib/reservation_service";
 
 // Define the time slots
 const timeSlots = [
     "18:00", "19:00", "20:00", "21:00", "22:00"
 ]
 
-type TableAvailability = {
-    [key: string]: {
-        [key: string]: boolean
-    }
-}
-
 type Table = {
     id: number
     capacity: number
-    availability: TableAvailability
+    availability: {
+        [key: string]: {
+            [key: string]: boolean
+        }
+    }
 }
 
-export default function ImprovedDateAwareMobileFriendlyRestaurantDashboard() {
+type Reservation = {
+    id: number
+    name: string
+    date: string
+    time: string
+    guests: number
+    tableId: number
+}
+
+export default function IntegratedRestaurantDashboard() {
     const [bookingLink, setBookingLink] = useState("https://labelle-epoque.com/book")
     const [selectedDate, setSelectedDate] = useState<Date>(new Date())
-    const [tables, setTables] = useState<Table[]>([
-        {
-            id: 1,
-            capacity: 2,
-            availability: {
-                [format(new Date(), 'yyyy-MM-dd')]: { "18:00": true, "19:00": true, "20:00": true, "21:00": true, "22:00": true },
-                [format(addDays(new Date(), 1), 'yyyy-MM-dd')]: { "18:00": true, "19:00": true, "20:00": true, "21:00": true, "22:00": true },
-            }
-        },
-        {
-            id: 2,
-            capacity: 4,
-            availability: {
-                [format(new Date(), 'yyyy-MM-dd')]: { "18:00": true, "19:00": false, "20:00": true, "21:00": true, "22:00": true },
-                [format(addDays(new Date(), 1), 'yyyy-MM-dd')]: { "18:00": true, "19:00": true, "20:00": true, "21:00": true, "22:00": true },
-            }
-        },
-        {
-            id: 3,
-            capacity: 6,
-            availability: {
-                [format(new Date(), 'yyyy-MM-dd')]: { "18:00": true, "19:00": true, "20:00": false, "21:00": false, "22:00": true },
-                [format(addDays(new Date(), 1), 'yyyy-MM-dd')]: { "18:00": true, "19:00": true, "20:00": true, "21:00": true, "22:00": true },
-            }
-        },
-    ])
-    const [reservations, setReservations] = useState([
-        { id: 1, name: "John Doe", date: "2023-06-15", time: "19:00", guests: 2, tableId: 1 },
-        { id: 2, name: "Jane Smith", date: "2023-06-16", time: "20:00", guests: 4, tableId: 2 },
-    ])
+    const [tables, setTables] = useState<Table[]>([])
+    const [reservations, setReservations] = useState<Reservation[]>([])
+    const [isLoading, setIsLoading] = useState(true)
 
-    const handleAddTable = (e: React.FormEvent<HTMLFormElement>) => {
+    useEffect(() => {
+        fetchTables()
+        fetchReservations()
+    }, [])
+
+    const fetchTables = async () => {
+        try {
+            const fetchedTables = await tableService.getTables()
+            setTables(fetchedTables)
+        } catch (error) {
+            toast.error("Failed to fetch tables")
+        } finally {
+            setIsLoading(false)
+        }
+    }
+
+    const fetchReservations = async () => {
+        try {
+            const fetchedReservations = await reservationService.getReservations()
+            setReservations(fetchedReservations)
+        } catch (error) {
+            toast.error("Failed to fetch reservations")
+        }
+    }
+
+    const handleAddTable = async (e: React.FormEvent<HTMLFormElement>) => {
         e.preventDefault()
         const formData = new FormData(e.currentTarget)
         const capacity = Number(formData.get("capacity"))
-        const newTable: Table = {
-            id: tables.length + 1,
+        const newTable: Partial<Table> = {
             capacity,
             availability: {
                 [format(selectedDate, 'yyyy-MM-dd')]: timeSlots.reduce((acc, slot) => ({ ...acc, [slot]: true }), {})
             }
         }
-        setTables([...tables, newTable])
-        e.currentTarget.reset()
-        toast.success("New table added successfully!")
+        try {
+            const createdTable = await tableService.createTable(newTable)
+            setTables([...tables, createdTable])
+            e.currentTarget.reset()
+            toast.success("New table added successfully!")
+        } catch (error) {
+            toast.error("Failed to add new table")
+        }
     }
 
-    const handleToggleTableAvailability = (id: number, timeSlot: string) => {
+    const handleToggleTableAvailability = async (id: number, timeSlot: string) => {
         const dateString = format(selectedDate, 'yyyy-MM-dd')
-        setTables(tables.map(table =>
-            table.id === id
-                ? {
-                    ...table,
-                    availability: {
-                        ...table.availability,
-                        [dateString]: {
-                            ...table.availability[dateString],
-                            [timeSlot]: !table.availability[dateString]?.[timeSlot]
-                        }
-                    }
-                }
-                : table
-        ))
         const table = tables.find(t => t.id === id)
-        if (table) {
-            toast.info(`Table ${id} on ${format(selectedDate, 'MMM dd, yyyy')} at ${timeSlot} is now ${table.availability[dateString]?.[timeSlot] ? 'unavailable' : 'available'}`)
+        if (!table) return
+
+        const updatedAvailability = {
+            ...table.availability,
+            [dateString]: {
+                ...table.availability[dateString],
+                [timeSlot]: !table.availability[dateString]?.[timeSlot]
+            }
+        }
+
+        try {
+            await tableService.updateTable(id, { ...table, availability: updatedAvailability })
+            setTables(tables.map(t => t.id === id ? { ...t, availability: updatedAvailability } : t))
+            toast.info(`Table ${id} on ${format(selectedDate, 'MMM dd, yyyy')} at ${timeSlot} is now ${updatedAvailability[dateString][timeSlot] ? 'unavailable' : 'available'}`)
+        } catch (error) {
+            toast.error("Failed to update table availability")
         }
     }
 
     const copyToClipboard = () => {
         navigator.clipboard.writeText(bookingLink)
         toast.success("Booking link copied to clipboard!")
+    }
+
+    if (isLoading) {
+        return (
+            <div className="flex items-center justify-center min-h-screen bg-gradient-to-br from-teal-600 to-emerald-700">
+                <Loader2 className="w-8 h-8 text-white animate-spin" />
+            </div>
+        )
     }
 
     return (
@@ -119,7 +138,7 @@ export default function ImprovedDateAwareMobileFriendlyRestaurantDashboard() {
             >
                 <h1 className="text-2xl md:text-4xl font-bold mb-4 md:mb-8 text-white">La Belle Époque Dashboard</h1>
 
-                <Card className="mb-4 md:mb-8 bg-white disabled">
+                <Card className="mb-4 md:mb-8 bg-white">
                     <CardHeader>
                         <CardTitle className="text-teal-800 text-lg md:text-xl">Booking Link</CardTitle>
                         <CardDescription className="text-teal-600 text-sm">Share this link with your customers</CardDescription>
@@ -173,7 +192,7 @@ export default function ImprovedDateAwareMobileFriendlyRestaurantDashboard() {
                                         <PopoverTrigger asChild>
                                             <Button
                                                 id="date"
-                                                variant={"outline"}
+                                                variant="outline"
                                                 className={`w-full md:w-auto justify-start text-left font-normal`}
                                             >
                                                 <CalendarIcon className="mr-2 h-4 w-4" />
@@ -266,7 +285,7 @@ export default function ImprovedDateAwareMobileFriendlyRestaurantDashboard() {
                                     <div className="text-center py-8">
                                         <AlertCircle className="mx-auto h-12 w-12 text-teal-600 mb-4" />
                                         <h3 className="text-lg font-semibold mb-2 text-teal-800">No Reservations Yet</h3>
-                                        <p className="text-teal-600">When customers make reservations, they'll appear here.</p>
+                                        <p className="text-teal-600">When customers make reservations, they&apos;ll appear here.</p>
                                     </div>
                                 )}
                             </CardContent>
