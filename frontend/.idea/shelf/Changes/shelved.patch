@@ -1,0 +1,11 @@
+Index: .env
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/.env b/.env
+new file mode 100644
+--- /dev/null	(date 1727043101457)
++++ b/.env	(date 1727043101457)
+@@ -0,0 +1,1 @@
++URL=https://m9iu0mrzy9.execute-api.us-east-1.amazonaws.com/booktable-backend

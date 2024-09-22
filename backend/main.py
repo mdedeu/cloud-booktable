@@ -1,11 +1,16 @@
 from fastapi import FastAPI
 
+from service.restaurant_service import RestaurantService
+from service.table_service import TableService
+
 app = FastAPI()
 
+table_service = TableService()
+restaurants_service = RestaurantService()
 
 @app.get("/table/{table_id}/availability")
 async def get_table_availability():
-    return {"message": "Hello World"}
+    return
 
 
 @app.get("/table/{table_id}")
