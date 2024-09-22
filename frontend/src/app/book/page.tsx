@@ -35,6 +35,7 @@ export default function MobileFriendlyCustomerBooking() {
         console.log("Booking submitted:", bookingData)
         //fetch js here to backend
 
+
         setTimeout(() => {
             setIsLoading(false)
             setBookingComplete(true)

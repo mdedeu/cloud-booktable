@@ -119,7 +119,7 @@ export default function ImprovedDateAwareMobileFriendlyRestaurantDashboard() {
             >
                 <h1 className="text-2xl md:text-4xl font-bold mb-4 md:mb-8 text-white">La Belle Époque Dashboard</h1>
 
-                <Card className="mb-4 md:mb-8 bg-white">
+                <Card className="mb-4 md:mb-8 bg-white disabled">
                     <CardHeader>
                         <CardTitle className="text-teal-800 text-lg md:text-xl">Booking Link</CardTitle>
                         <CardDescription className="text-teal-600 text-sm">Share this link with your customers</CardDescription>
