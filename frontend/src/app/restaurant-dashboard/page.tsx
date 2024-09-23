@@ -7,42 +7,43 @@ import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
-import { ClipboardIcon, PlusIcon, CheckIcon, XIcon, AlertCircle, CalendarIcon, Loader2 } from "lucide-react"
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
+import { PlusIcon, CheckIcon, XIcon, AlertCircle, CalendarIcon, Loader2 } from "lucide-react"
 import { toast, ToastContainer } from 'react-toastify'
 import 'react-toastify/dist/ReactToastify.css'
-import { format } from 'date-fns'
+import { format, parse, isSameDay } from 'date-fns'
 import { Calendar } from "@/components/ui/calendar"
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover"
-import {tableService} from "@/lib/table_service";
-import {reservationService} from "@/lib/reservation_service";
+import { tableService } from "@/lib/table_service"
+import { reservationService } from "@/lib/reservation_service"
 
-// Define the time slots
+interface TableAvailability {
+    date: string;
+    times: {
+        [key: string]: boolean;
+    };
+}
+
+interface Table {
+    id: number;
+    capacity: number;
+    availability: TableAvailability[];
+}
+
+interface Reservation {
+    id: number;
+    name: string;
+    date: string;
+    time: string;
+    guests: number;
+    tableId: number;
+}
+
 const timeSlots = [
-    "18:00", "19:00", "20:00", "21:00", "22:00"
+    "12:00 PM", "1:00 PM", "2:00 PM", "3:00 PM"
 ]
 
-type Table = {
-    id: number
-    capacity: number
-    availability: {
-        [key: string]: {
-            [key: string]: boolean
-        }
-    }
-}
-
-type Reservation = {
-    id: number
-    name: string
-    date: string
-    time: string
-    guests: number
-    tableId: number
-}
-
 export default function IntegratedRestaurantDashboard() {
-    const [bookingLink, setBookingLink] = useState("https://labelle-epoque.com/book")
     const [selectedDate, setSelectedDate] = useState<Date>(new Date())
     const [tables, setTables] = useState<Table[]>([])
     const [reservations, setReservations] = useState<Reservation[]>([])
@@ -79,9 +80,12 @@ export default function IntegratedRestaurantDashboard() {
         const capacity = Number(formData.get("capacity"))
         const newTable: Partial<Table> = {
             capacity,
-            availability: {
-                [format(selectedDate, 'yyyy-MM-dd')]: timeSlots.reduce((acc, slot) => ({ ...acc, [slot]: true }), {})
-            }
+            availability: [
+                {
+                    date: format(selectedDate, 'yyyy-MM-dd'),
+                    times: timeSlots.reduce((acc, slot) => ({ ...acc, [slot]: true }), {})
+                }
+            ]
         }
         try {
             const createdTable = await tableService.createTable(newTable)
@@ -98,26 +102,44 @@ export default function IntegratedRestaurantDashboard() {
         const table = tables.find(t => t.id === id)
         if (!table) return
 
-        const updatedAvailability = {
-            ...table.availability,
-            [dateString]: {
-                ...table.availability[dateString],
-                [timeSlot]: !table.availability[dateString]?.[timeSlot]
+        const availabilityIndex = table.availability.findIndex(a => a.date === dateString)
+        let updatedAvailability: TableAvailability[]
+
+        if (availabilityIndex !== -1) {
+            updatedAvailability = [...table.availability]
+            updatedAvailability[availabilityIndex] = {
+                ...updatedAvailability[availabilityIndex],
+                times: {
+                    ...updatedAvailability[availabilityIndex].times,
+                    [timeSlot]: !updatedAvailability[availabilityIndex].times[timeSlot]
+                }
             }
+        } else {
+            updatedAvailability = [
+                ...table.availability,
+                {
+                    date: dateString,
+                    times: {
+                        ...timeSlots.reduce((acc, slot) => ({ ...acc, [slot]: true }), {}),
+                        [timeSlot]: false
+                    }
+                }
+            ]
         }
 
         try {
             await tableService.updateTable(id, { ...table, availability: updatedAvailability })
             setTables(tables.map(t => t.id === id ? { ...t, availability: updatedAvailability } : t))
-            toast.info(`Table ${id} on ${format(selectedDate, 'MMM dd, yyyy')} at ${timeSlot} is now ${updatedAvailability[dateString][timeSlot] ? 'unavailable' : 'available'}`)
+            toast.info(`Table ${id} on ${format(selectedDate, 'MMM dd, yyyy')} at ${timeSlot} is now ${updatedAvailability[availabilityIndex]?.times[timeSlot] ? 'available' : 'unavailable'}`)
         } catch (error) {
             toast.error("Failed to update table availability")
         }
     }
 
-    const copyToClipboard = () => {
-        navigator.clipboard.writeText(bookingLink)
-        toast.success("Booking link copied to clipboard!")
+    const getTableAvailability = (table: Table, date: Date, timeSlot: string): boolean => {
+        const dateString = format(date, 'yyyy-MM-dd')
+        const availabilityForDate = table.availability.find(a => a.date === dateString)
+        return availabilityForDate?.times[timeSlot] ?? false
     }
 
     if (isLoading) {
@@ -137,24 +159,6 @@ export default function IntegratedRestaurantDashboard() {
                 transition={{ duration: 0.5 }}
             >
                 <h1 className="text-2xl md:text-4xl font-bold mb-4 md:mb-8 text-white">La Belle Époque Dashboard</h1>
-
-                <Card className="mb-4 md:mb-8 bg-white">
-                    <CardHeader>
-                        <CardTitle className="text-teal-800 text-lg md:text-xl">Booking Link</CardTitle>
-                        <CardDescription className="text-teal-600 text-sm">Share this link with your customers</CardDescription>
-                    </CardHeader>
-                    <CardContent>
-                        <div className="flex flex-col md:flex-row items-center space-y-2 md:space-y-0 md:space-x-2">
-                            <div className="w-full md:flex-1 relative">
-                                <Input value={bookingLink} readOnly className="bg-gray-100 text-teal-800 border-teal-300 pr-20" />
-                                <Button onClick={copyToClipboard} variant="secondary" className="absolute right-0 top-0 bottom-0 bg-teal-600 hover:bg-teal-700 text-white">
-                                    <ClipboardIcon className="h-4 w-4" />
-                                    <span className="sr-only">Copy</span>
-                                </Button>
-                            </div>
-                        </div>
-                    </CardContent>
-                </Card>
 
                 <Tabs defaultValue="tables" className="space-y-4">
                     <TabsList className="bg-white w-full">
@@ -232,12 +236,12 @@ export default function IntegratedRestaurantDashboard() {
                                                                 variant="outline"
                                                                 size="sm"
                                                                 className={`${
-                                                                    table.availability[format(selectedDate, 'yyyy-MM-dd')]?.[slot]
+                                                                    getTableAvailability(table, selectedDate, slot)
                                                                         ? "bg-green-100 hover:bg-green-200 text-green-800"
                                                                         : "bg-red-100 hover:bg-red-200 text-red-800"
                                                                 }`}
                                                             >
-                                                                {table.availability[format(selectedDate, 'yyyy-MM-dd')]?.[slot] ? <CheckIcon className="h-4 w-4" /> : <XIcon className="h-4 w-4" />}
+                                                                {getTableAvailability(table, selectedDate, slot) ? <CheckIcon className="h-4 w-4" /> : <XIcon className="h-4 w-4" />}
                                                             </Button>
                                                         </TableCell>
                                                     ))}

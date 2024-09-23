@@ -6,7 +6,12 @@ class ReservationService{
 
     async getReservations() {
         const response = await fetch(this.url);
-        return await response.json();
+        if (!response.ok) {
+            throw new Error('Failed to fetch reservations');
+        }
+        const jsonResponse = await response.json();
+        console.log(jsonResponse);
+        return JSON.parse(jsonResponse.body);
     }
 
     async createReservation(reservation) {
