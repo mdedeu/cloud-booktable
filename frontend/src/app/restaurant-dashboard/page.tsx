@@ -90,9 +90,9 @@ export default function IntegratedRestaurantDashboard() {
         try {
             const createdTable = await tableService.createTable(newTable)
             setTables([...tables, createdTable])
-            e.currentTarget.reset()
             toast.success("New table added successfully!")
         } catch (error) {
+            console.log(error)
             toast.error("Failed to add new table")
         }
     }
@@ -137,9 +137,12 @@ export default function IntegratedRestaurantDashboard() {
     }
 
     const getTableAvailability = (table: Table, date: Date, timeSlot: string): boolean => {
+        if (!table.availability || table.availability.length === 0) {
+            return false // Assume available if no data
+        }
         const dateString = format(date, 'yyyy-MM-dd')
         const availabilityForDate = table.availability.find(a => a.date === dateString)
-        return availabilityForDate?.times[timeSlot] ?? false
+        return availabilityForDate?.times[timeSlot] ?? false // Assume available if no data for the date
     }
 
     if (isLoading) {

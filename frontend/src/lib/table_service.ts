@@ -24,7 +24,9 @@ class TableService {
             },
             body: JSON.stringify(table)
         });
-        return await response.json();
+        const jsonResponse = await response.json();
+        console.log(jsonResponse);
+        return JSON.parse(jsonResponse.body);
     }
 
     async updateTable(id, table) {
