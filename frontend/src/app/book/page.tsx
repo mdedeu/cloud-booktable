@@ -14,19 +14,9 @@ import { toast, ToastContainer } from 'react-toastify'
 import 'react-toastify/dist/ReactToastify.css'
 import {tableService} from "@/lib/table_service";
 import {reservationService} from "@/lib/reservation_service";
+import {Table} from "@/lib/types";
 
-interface TableAvailability {
-    date: string;
-    times: {
-        [key: string]: boolean;
-    };
-}
 
-interface Table {
-    id: number;
-    capacity: number;
-    availability: TableAvailability[];
-}
 
 export default function IntegratedCustomerBooking() {
     const [tables, setTables] = useState<Table[]>([])

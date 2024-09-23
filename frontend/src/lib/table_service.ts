@@ -1,4 +1,3 @@
-import {json} from "node:stream/consumers";
 
 class TableService {
     url;
@@ -13,6 +12,7 @@ class TableService {
             throw new Error('Failed to fetch tables');
         }
         const jsonResponse = await response.json();
+        console.log(jsonResponse);
         return JSON.parse(jsonResponse.body);
     }
 
