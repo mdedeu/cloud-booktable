@@ -30,26 +30,40 @@ interface Table {
 
 export default function IntegratedCustomerBooking() {
     const [tables, setTables] = useState<Table[]>([])
+    const [filteredTables, setFilteredTables] = useState<Table[]>([])
     const [isLoading, setIsLoading] = useState(true)
     const [bookingComplete, setBookingComplete] = useState(false)
     const [date, setDate] = useState<Date | undefined>(undefined)
     const [availableDates, setAvailableDates] = useState<Date[]>([])
     const [availableTimes, setAvailableTimes] = useState<string[]>([])
     const [selectedTable, setSelectedTable] = useState<number | null>(null)
+    const [guests, setGuests] = useState<number | null>(null)
+    const [selectedTime, setSelectedTime] = useState<string | null>(null)
 
     useEffect(() => {
         fetchTables()
     }, [])
+
+    useEffect(() => {
+        if (guests) {
+            const filtered = tables.filter(table => table.capacity >= guests)
+            setFilteredTables(filtered)
+            setAvailableDates(getAvailableDates(filtered))
+        } else {
+            setFilteredTables([])
+            setAvailableDates([])
+        }
+        setDate(undefined)
+        setAvailableTimes([])
+        setSelectedTable(null)
+        setSelectedTime(null)
+    }, [guests, tables])
 
     const fetchTables = async () => {
         setIsLoading(true)
         try {
             const fetchedTables = await tableService.getTables()
             setTables(fetchedTables)
-            const dates = Array.from(new Set(fetchedTables.flatMap(table =>
-                table.availability.map(slot => parse(slot.date, 'yyyy-MM-dd', new Date()))
-            )))
-            setAvailableDates(dates)
         } catch (error) {
             toast.error("Failed to fetch tables")
         } finally {
@@ -57,25 +71,44 @@ export default function IntegratedCustomerBooking() {
         }
     }
 
+    const getAvailableDates = (tables: Table[]) => {
+        const dates = new Set<string>()
+        tables.forEach(table => {
+            table.availability.forEach(slot => {
+                if (Object.values(slot.times).some(available => available)) {
+                    dates.add(slot.date)
+                }
+            })
+        })
+        return Array.from(dates).map(dateString => parse(dateString, 'yyyy-MM-dd', new Date()))
+    }
+
     const handleDateChange = (newDate: Date | undefined) => {
         setDate(newDate)
         setSelectedTable(null)
+        setSelectedTime(null)
         if (newDate) {
             const formattedDate = format(newDate, 'yyyy-MM-dd')
-            const times = Array.from(new Set(tables.flatMap(table =>
-                table.availability
-                    .find(slot => slot.date === formattedDate)?.times || {}
-            )))
-            setAvailableTimes(Object.keys(times).filter(time => times[time]))
+            const times = new Set<string>()
+            filteredTables.forEach(table => {
+                const dateSlot = table.availability.find(slot => slot.date === formattedDate)
+                if (dateSlot) {
+                    Object.entries(dateSlot.times).forEach(([time, available]) => {
+                        if (available) times.add(time)
+                    })
+                }
+            })
+            setAvailableTimes(Array.from(times).sort())
         } else {
             setAvailableTimes([])
         }
     }
 
     const handleTimeChange = (time: string) => {
+        setSelectedTime(time)
         if (date) {
             const formattedDate = format(date, 'yyyy-MM-dd')
-            const availableTablesForDateTime = tables.filter(table =>
+            const availableTablesForDateTime = filteredTables.filter(table =>
                 table.availability.some(slot =>
                     slot.date === formattedDate && slot.times[time]
                 )
@@ -86,6 +119,10 @@ export default function IntegratedCustomerBooking() {
         }
     }
 
+    const handleGuestsChange = (value: string) => {
+        setGuests(parseInt(value, 10))
+    }
+
     const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
         e.preventDefault()
         setIsLoading(true)
@@ -93,8 +130,10 @@ export default function IntegratedCustomerBooking() {
         const bookingData = {
             ...Object.fromEntries(formData),
             date: date ? format(date, 'yyyy-MM-dd') : '',
+            time: selectedTime,
             tableId: selectedTable
         }
+        console.log(bookingData)
 
         try {
             await reservationService.createReservation(bookingData)
@@ -136,18 +175,36 @@ export default function IntegratedCustomerBooking() {
                             </div>
 
                             <div className="space-y-2">
+                                <Label htmlFor="guests" className="text-sm font-medium text-gray-700">Number of Guests</Label>
+                                <div className="relative">
+                                    <UsersIcon className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" />
+                                    <Select name="guests" required onValueChange={handleGuestsChange}>
+                                        <SelectTrigger className="w-full pl-10 pr-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-teal-500 focus:border-teal-500 text-muted-foreground">
+                                            <SelectValue placeholder="Select number of guests" />
+                                        </SelectTrigger>
+                                        <SelectContent>
+                                            {[1, 2, 3, 4, 5, 6].map(num => (
+                                                <SelectItem key={num} value={num.toString()}>{num}</SelectItem>
+                                            ))}
+                                        </SelectContent>
+                                    </Select>
+                                </div>
+                            </div>
+
+                            <div className="space-y-2">
                                 <Label htmlFor="date" className="text-sm font-medium text-gray-700">Date</Label>
                                 <Popover>
                                     <PopoverTrigger asChild>
                                         <Button
                                             variant="outline"
-                                            className={`w-full justify-start text-left font-normal ${!date && "text-muted-foreground"}`}
+                                            className={`w-full justify-start text-left font-normal text-gray-700`}
+                                            disabled={!guests}
                                         >
                                             <CalendarIcon className="mr-2 h-4 w-4" />
                                             {date ? format(date, "PPP") : "Pick a date"}
                                         </Button>
                                     </PopoverTrigger>
-                                    <PopoverContent className="w-auto p-0" align="start">
+                                    <PopoverContent className="w-auto p-0 text-gray-700" align="start">
                                         <Calendar
                                             mode="single"
                                             selected={date}
@@ -167,30 +224,13 @@ export default function IntegratedCustomerBooking() {
                                 <Label htmlFor="time" className="text-sm font-medium text-gray-700">Time</Label>
                                 <div className="relative">
                                     <ClockIcon className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" />
-                                    <Select name="time" required onValueChange={handleTimeChange}>
+                                    <Select name="time" required onValueChange={handleTimeChange} disabled={!date}>
                                         <SelectTrigger className={`w-full pl-10 pr-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-teal-500 focus:border-teal-500 text-muted-foreground`}>
                                             <SelectValue placeholder="Select a time"/>
                                         </SelectTrigger>
                                         <SelectContent>
                                             {availableTimes.map(time => (
                                                 <SelectItem key={time} value={time}>{time}</SelectItem>
-                                            ))}
-                                        </SelectContent>
-                                    </Select>
-                                </div>
-                            </div>
-
-                            <div className="space-y-2">
-                                <Label htmlFor="guests" className="text-sm font-medium text-gray-700">Number of Guests</Label>
-                                <div className="relative">
-                                    <UsersIcon className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" />
-                                    <Select name="guests" required>
-                                        <SelectTrigger className="w-full pl-10 pr-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-teal-500 focus:border-teal-500 text-muted-foreground">
-                                            <SelectValue placeholder="Select number of guests" />
-                                        </SelectTrigger>
-                                        <SelectContent>
-                                            {[1, 2, 3, 4, 5, 6].map(num => (
-                                                <SelectItem key={num} value={num.toString()}>{num}</SelectItem>
                                             ))}
                                         </SelectContent>
                                     </Select>
@@ -221,6 +261,8 @@ export default function IntegratedCustomerBooking() {
                             setDate(undefined)
                             setSelectedTable(null)
                             setAvailableTimes([])
+                            setGuests(null)
+                            setSelectedTime(null)
                         }} className="bg-teal-600 hover:bg-teal-700 text-white">
                             Make Another Reservation
                         </Button>

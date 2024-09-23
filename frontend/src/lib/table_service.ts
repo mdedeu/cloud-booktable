@@ -1,8 +1,10 @@
+import {json} from "node:stream/consumers";
+
 class TableService {
-    private url;
+    url;
 
     constructor() {
-        this.url = process.env.URL || 'http://localhost:3000/table';
+        this.url = process.env.NEXT_PUBLIC_BACKEND_URL ? process.env.NEXT_PUBLIC_BACKEND_URL +  '/table' : 'http://localhost:3000/table';
     }
 
     async getTables() {
@@ -10,7 +12,8 @@ class TableService {
         if (!response.ok) {
             throw new Error('Failed to fetch tables');
         }
-        return await response.json();
+        const jsonResponse = await response.json();
+        return JSON.parse(jsonResponse.body);
     }
 
     async createTable(table) {
