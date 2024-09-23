@@ -1,7 +1,7 @@
 class ReservationService{
-    private url;
+    url;
     constructor() {
-        this.url = process.env.URL || 'http://localhost:3000/reservation';
+        this.url = process.env.NEXT_PUBLIC_BACKEND_URL ? process.env.NEXT_PUBLIC_BACKEND_URL +  '/reservation' : 'http://localhost:3000/reservation';
     }
 
     async getReservations() {
