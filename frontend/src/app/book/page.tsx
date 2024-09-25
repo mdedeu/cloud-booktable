@@ -7,7 +7,7 @@ import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { CalendarIcon, ClockIcon, UsersIcon, CheckCircle, Loader2 } from "lucide-react"
-import { format, isSameDay, parseISO } from "date-fns"
+import { format, isSameDay } from "date-fns"
 import { Calendar } from "@/components/ui/calendar"
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover"
 import { toast, ToastContainer } from 'react-toastify'
@@ -51,9 +51,14 @@ export default function IntegratedCustomerBooking() {
         setIsLoading(true)
         try {
             const fetchedTables = await tableService.getTables()
-            setTables(fetchedTables)
+            if (Array.isArray(fetchedTables)) {
+                setTables(fetchedTables)
+            } else {
+                throw new Error("Invalid data format received from API")
+            }
         } catch (error) {
-            toast.error("Failed to fetch tables")
+            console.error("Error fetching tables:", error)
+            toast.error("Failed to fetch tables. Please try again later.")
         } finally {
             setIsLoading(false)
         }
@@ -62,15 +67,17 @@ export default function IntegratedCustomerBooking() {
     const getAvailableDates = (tables: Table[]) => {
         const dates = new Set<string>()
         tables.forEach(table => {
-            table.availability.forEach(slot => {
-                if (slot.date && Object.values(slot.times).some(available => available)) {
-                    dates.add(slot.date)
-                }
-            })
+            if (Array.isArray(table.availability)) {
+                table.availability.forEach(slot => {
+                    if (slot.date && Object.values(slot.times).some(available => available)) {
+                        dates.add(slot.date)
+                    }
+                })
+            }
         })
         return Array.from(dates)
             .filter((dateString) => dateString != null)
-            .map(dateString => parseISO(dateString))
+            .map(dateString => new Date(dateString))
     }
 
     const handleDateChange = (newDate: Date | undefined) => {
@@ -78,10 +85,10 @@ export default function IntegratedCustomerBooking() {
         setSelectedTable(null)
         setSelectedTime(null)
         if (newDate) {
-            format(newDate, 'yyyy-MM-dd');
+            const formattedDate = format(newDate, 'yyyy-MM-dd')
             const times = new Set<string>()
             filteredTables.forEach(table => {
-                const dateSlot = table.availability.find(slot => slot.date && isSameDay(parseISO(slot.date), newDate))
+                const dateSlot = table.availability.find(slot => slot.date && isSameDay(new Date(slot.date), newDate))
                 if (dateSlot) {
                     Object.entries(dateSlot.times).forEach(([time, available]) => {
                         if (available) times.add(time)
@@ -99,7 +106,7 @@ export default function IntegratedCustomerBooking() {
         if (date) {
             const availableTablesForDateTime = filteredTables.filter(table =>
                 table.availability.some(slot =>
-                    slot.date && isSameDay(parseISO(slot.date), date) && slot.times[time]
+                    slot.date && isSameDay(new Date(slot.date), date) && slot.times[time]
                 )
             )
             if (availableTablesForDateTime.length > 0) {
@@ -130,10 +137,19 @@ export default function IntegratedCustomerBooking() {
             setBookingComplete(true)
             toast.success("Reservation created successfully!")
         } catch (error) {
-            toast.error("Failed to create reservation")
+            console.error("Error creating reservation:", error)
+            toast.error("Failed to create reservation. Please try again.")
         } finally {
             setIsLoading(false)
         }
+    }
+
+    if (isLoading) {
+        return (
+            <div className="min-h-screen bg-gradient-to-br from-teal-600 to-emerald-700 flex items-center justify-center">
+                <Loader2 className="h-8 w-8 animate-spin text-white" />
+            </div>
+        )
     }
 
     return (

@@ -17,7 +17,11 @@ exports.handler = async (event, context) => {
         await client.end();
         return {
             statusCode: 200,
-            body: JSON.stringify({id: res.rows[0].id, capacity: res.rows[0].capacity })
+            body: res.rows[0],
+            headers:{
+                	'Access-Control-Allow-Origin': '*',
+			        'Access-Control-Allow-Methods': 'GET'
+            }
         };
     } catch (error) {
         console.error('Connection error details:', error);
