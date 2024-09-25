@@ -13,12 +13,11 @@ exports.handler = async (event, context) => {
     try {
         await client.connect();
 
-        let body = JSON.parse(event);
-
-        const res = await client.query("insert into tables(capacity) values ($1)", [body.capacity]);
+        const res = await client.query("insert into tables(capacity) values ($1) returning id, capacity", [event.capacity]);
         await client.end();
         return {
-            statusCode: 200
+            statusCode: 200,
+            body: JSON.stringify({id: res.rows[0].id, capacity: res.rows[0].capacity })
         };
     } catch (error) {
         console.error('Connection error details:', error);
