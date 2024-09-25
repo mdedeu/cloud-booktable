@@ -7,7 +7,7 @@ import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { CalendarIcon, ClockIcon, UsersIcon, CheckCircle, Loader2 } from "lucide-react"
-import { format, isSameDay } from "date-fns"
+import { format, isSameDay, startOfDay } from "date-fns"
 import { Calendar } from "@/components/ui/calendar"
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover"
 import { toast, ToastContainer } from 'react-toastify'
@@ -36,15 +36,20 @@ export default function IntegratedCustomerBooking() {
         if (guests) {
             const filtered = tables.filter(table => table.capacity >= guests)
             setFilteredTables(filtered)
-            setAvailableDates(getAvailableDates(filtered))
+            const dates = getAvailableDates(filtered)
+            setAvailableDates(dates)
+            setDate(undefined)
+            setAvailableTimes([])
+            setSelectedTable(null)
+            setSelectedTime(null)
         } else {
             setFilteredTables([])
             setAvailableDates([])
+            setDate(undefined)
+            setAvailableTimes([])
+            setSelectedTable(null)
+            setSelectedTime(null)
         }
-        setDate(undefined)
-        setAvailableTimes([])
-        setSelectedTable(null)
-        setSelectedTime(null)
     }, [guests, tables])
 
     const fetchTables = async () => {
@@ -64,7 +69,7 @@ export default function IntegratedCustomerBooking() {
         }
     }
 
-    const getAvailableDates = (tables: Table[]) => {
+    const getAvailableDates = (tables: Table[]): Date[] => {
         const dates = new Set<string>()
         tables.forEach(table => {
             if (Array.isArray(table.availability)) {
@@ -77,7 +82,8 @@ export default function IntegratedCustomerBooking() {
         })
         return Array.from(dates)
             .filter((dateString) => dateString != null)
-            .map(dateString => new Date(dateString))
+            .map(dateString => startOfDay(new Date(dateString)))
+            .filter(date => date >= startOfDay(new Date())) // Only future dates
     }
 
     const handleDateChange = (newDate: Date | undefined) => {
@@ -111,6 +117,8 @@ export default function IntegratedCustomerBooking() {
             )
             if (availableTablesForDateTime.length > 0) {
                 setSelectedTable(availableTablesForDateTime[0].id)
+            } else {
+                setSelectedTable(null)
             }
         }
     }
@@ -121,13 +129,17 @@ export default function IntegratedCustomerBooking() {
 
     const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
         e.preventDefault()
+        if (!selectedTable || !date || !selectedTime || !guests) {
+            toast.error("Please fill in all required fields")
+            return
+        }
         setIsLoading(true)
         const formData = new FormData(e.currentTarget)
         const reservationData = {
             table_id: selectedTable,
             name: formData.get('name') as string,
             email: formData.get('email') as string,
-            date: date ? format(date, 'yyyy-MM-dd') : '',
+            date: format(date, 'yyyy-MM-dd'),
             time_slot: selectedTime,
             guests: guests
         }
@@ -204,7 +216,7 @@ export default function IntegratedCustomerBooking() {
                                         <Button
                                             variant="outline"
                                             className={`w-full justify-start text-left font-normal text-gray-700`}
-                                            disabled={!guests}
+                                            disabled={!guests || availableDates.length === 0}
                                         >
                                             <CalendarIcon className="mr-2 h-4 w-4" />
                                             {date ? format(date, "PPP") : "Pick a date"}
@@ -230,7 +242,7 @@ export default function IntegratedCustomerBooking() {
                                 <Label htmlFor="time" className="text-sm font-medium text-gray-700">Time</Label>
                                 <div className="relative">
                                     <ClockIcon className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" />
-                                    <Select name="time" required onValueChange={handleTimeChange} disabled={!date}>
+                                    <Select name="time" required onValueChange={handleTimeChange} disabled={!date || availableTimes.length === 0}>
                                         <SelectTrigger className={`w-full pl-10 pr-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-teal-500 focus:border-teal-500 text-muted-foreground`}>
                                             <SelectValue placeholder="Select a time"/>
                                         </SelectTrigger>
