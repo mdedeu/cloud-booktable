@@ -1,0 +1,25 @@
+Index: src/lib/types.ts
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.BaseRevisionTextPatchEP
+<+>export interface Table {\n    id: number;\n    capacity: number;\n    availability: TableAvailability[];\n}\ninterface TableAvailability {\n    date: string;\n    times: {\n        [key: string]: boolean;\n    };\n}\n\nexport type Reservation = {\n    id: number\n    name: string\n    date: string\n    time: string\n    guests: number\n    tableId: number\n}
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/src/lib/types.ts b/src/lib/types.ts
+--- a/src/lib/types.ts	(revision 77c62e7346e0027cb0db5fe90f3be8681af2270a)
++++ b/src/lib/types.ts	(date 1727058729034)
+@@ -11,10 +11,11 @@
+ }
+ 
+ export type Reservation = {
+-    id: number
++    id?: number
+     name: string
++    email:string
+     date: string
+     time: string
+-    guests: number
++    guests?: number
+     tableId: number
+ }
+\ No newline at end of file
