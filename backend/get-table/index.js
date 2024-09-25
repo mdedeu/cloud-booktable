@@ -1,5 +1,6 @@
+const { Client } = require('pg');
+
 exports.handler = async (event, context) => {
-    const { Client } = require('pg');
     const client = new Client({
         host: process.env.RDS_HOST,
         port: process.env.RDS_PORT || '5432',
@@ -14,12 +15,23 @@ exports.handler = async (event, context) => {
     try {
         // Get all tables
         const tablesRes = await client.query(`
-            SELECT tables.id AS table_id, capacity, reservations.date AS date, reservations.time_slot AS time_slot 
-            FROM tables 
-            LEFT JOIN reservations ON tables.id = reservations.table_id
+            SELECT id, capacity
+            FROM tables
         `);
         const tables = tablesRes.rows;
-        const resultMap = {};
+
+        // Get reservations for the next two weeks
+        const today = new Date();
+        today.setHours(0, 0, 0, 0);
+        const twoWeeksLater = new Date(today);
+        twoWeeksLater.setDate(today.getDate() + 14);
+
+        const reservationsRes = await client.query(`
+            SELECT table_id, date, time_slot
+            FROM reservations
+            WHERE date >= $1 AND date < $2
+        `, [today.toISOString(), twoWeeksLater.toISOString()]);
+        const reservations = reservationsRes.rows;
 
         // Define a mapping for time formats
         const timeFormatMap = {
@@ -27,44 +39,46 @@ exports.handler = async (event, context) => {
             "13:00:00": "1:00 PM",
             "14:00:00": "2:00 PM",
             "15:00:00": "3:00 PM",
-            // Add more mappings as needed
+        };
+
+        const timeSlots = Object.values(timeFormatMap);
+
+        // Helper function to format date as YYYY-MM-DD
+        const formatDate = (date) => {
+            const year = date.getFullYear();
+            const month = String(date.getMonth() + 1).padStart(2, '0');
+            const day = String(date.getDate()).padStart(2, '0');
+            return `${year}-${month}-${day}`;
         };
 
         // Process the fetched data
-        tables.forEach(row => {
-            const { table_id, capacity, date, time_slot } = row;
+        const results = tables.map(table => {
+            const tableReservations = reservations.filter(res => res.table_id === table.id);
+            const availability = [];
 
-            // Initialize the table entry if it doesn't exist
-            if (!resultMap[table_id]) {
-                resultMap[table_id] = {
-                    id: table_id,
-                    capacity,
-                    availability: [],
-                };
+            for (let i = 0; i < 14; i++) {
+                const currentDate = new Date(today);
+                currentDate.setDate(today.getDate() + i);
+                const formattedDate = formatDate(currentDate);
+                const dateReservations = tableReservations.filter(res => formatDate(new Date(res.date)) === formattedDate);
+
+                const times = {};
+                timeSlots.forEach(slot => {
+                    times[slot] = !dateReservations.some(res => timeFormatMap[res.time_slot] === slot);
+                });
+
+                availability.push({
+                    date: formattedDate,
+                    times: times
+                });
             }
 
-            let availabilityEntry = resultMap[table_id].availability.find(avail => avail.date === date);
-            if (!availabilityEntry) {
-                availabilityEntry = {
-                    date,
-                    times: {
-                        "12:00 PM": true,
-                        "1:00 PM": true,
-                        "2:00 PM": true,
-                        "3:00 PM": true,
-                    },
-                };
-                resultMap[table_id].availability.push(availabilityEntry);
-            }
-
-            // Normalize the time slot using the mapping
-            if (time_slot) {
-                const formattedTimeSlot = timeFormatMap[time_slot] || time_slot; // Use the mapped value or the original
-                availabilityEntry.times[formattedTimeSlot] = false; // Set to false if reserved
-            }
+            return {
+                id: table.id,
+                capacity: table.capacity,
+                availability: availability
+            };
         });
-
-        const results = Object.values(resultMap);
 
         return {
             statusCode: 200,

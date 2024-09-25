@@ -4,7 +4,9 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="8eda5742-6782-436c-8f3e-1972753a0452" name="Changes" comment="fix: frontend reservations table" />
+    <list default="true" id="8eda5742-6782-436c-8f3e-1972753a0452" name="Changes" comment="fix: varios">
+      <change beforePath="$PROJECT_DIR$/../backend/create-table/index.js" beforeDir="false" afterPath="$PROJECT_DIR$/../backend/create-table/index.js" afterDir="false" />
+    </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
     <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
@@ -76,6 +78,7 @@
       <workItem from="1727235404444" duration="2164000" />
       <workItem from="1727270869348" duration="834000" />
       <workItem from="1727279238590" duration="617000" />
+      <workItem from="1727280801439" duration="3872000" />
     </task>
     <task id="LOCAL-00001" summary="fix: integrating with backend">
       <option name="closed" value="true" />
@@ -157,7 +160,15 @@
       <option name="project" value="LOCAL" />
       <updated>1727279341314</updated>
     </task>
-    <option name="localTasksCounter" value="11" />
+    <task id="LOCAL-00011" summary="fix: varios">
+      <option name="closed" value="true" />
+      <created>1727283697073</created>
+      <option name="number" value="00011" />
+      <option name="presentableId" value="LOCAL-00011" />
+      <option name="project" value="LOCAL" />
+      <updated>1727283697073</updated>
+    </task>
+    <option name="localTasksCounter" value="12" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -172,6 +183,7 @@
     <MESSAGE value="fix: metadata" />
     <MESSAGE value="fix: assume available if no data" />
     <MESSAGE value="fix: frontend reservations table" />
-    <option name="LAST_COMMIT_MESSAGE" value="fix: frontend reservations table" />
+    <MESSAGE value="fix: varios" />
+    <option name="LAST_COMMIT_MESSAGE" value="fix: varios" />
   </component>
 </project>
