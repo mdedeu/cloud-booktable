@@ -13,10 +13,8 @@ exports.handler = async (event, context) => {
     try {
         await client.connect();
 
-        let body = {};
-        if (event.body) {
-            body = JSON.parse(event.body);
-        }
+        let body = JSON.parse(event);
+
         const res = await client.query("insert into tables(capacity) values ($1)", [body.capacity]);
         await client.end();
         return {
