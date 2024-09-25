@@ -34,9 +34,9 @@ interface Reservation {
     id: number;
     name: string;
     date: string;
-    time: string;
+    time_slot: string;
     guests: number;
-    tableId: number;
+    table_id: number;
 }
 
 const timeSlots = [
@@ -269,6 +269,7 @@ export default function IntegratedRestaurantDashboard() {
                                             <TableRow>
                                                 <TableHead className="text-teal-700">ID</TableHead>
                                                 <TableHead className="text-teal-700">Name</TableHead>
+                                                <TableHead className="text-teal-700">Email</TableHead>
                                                 <TableHead className="text-teal-700">Date</TableHead>
                                                 <TableHead className="text-teal-700">Time</TableHead>
                                                 <TableHead className="text-teal-700">Guests</TableHead>
@@ -280,10 +281,11 @@ export default function IntegratedRestaurantDashboard() {
                                                 <TableRow key={reservation.id}>
                                                     <TableCell className="font-medium text-teal-800">{reservation.id}</TableCell>
                                                     <TableCell className="text-teal-800">{reservation.name}</TableCell>
+                                                    <TableCell className="text-teal-800">{reservation.email}</TableCell>
                                                     <TableCell className="text-teal-800">{reservation.date}</TableCell>
-                                                    <TableCell className="text-teal-800">{reservation.time}</TableCell>
+                                                    <TableCell className="text-teal-800">{reservation.time_slot}</TableCell>
                                                     <TableCell className="text-teal-800">{reservation.guests}</TableCell>
-                                                    <TableCell className="text-teal-800">{reservation.tableId}</TableCell>
+                                                    <TableCell className="text-teal-800">{reservation.table_id}</TableCell>
                                                 </TableRow>
                                             ))}
                                         </TableBody>
