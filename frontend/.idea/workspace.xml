@@ -1,0 +1,181 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="AutoImportSettings">
+    <option name="autoReloadType" value="SELECTIVE" />
+  </component>
+  <component name="ChangeListManager">
+    <list default="true" id="8eda5742-6782-436c-8f3e-1972753a0452" name="Changes" comment="fix: assume available if no data">
+      <change afterPath="$PROJECT_DIR$/../backend/.idea/jsLibraryMappings.xml" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/../backend/create-reservation/index.js" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/../backend/create-reservation/package.json" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/../backend/create-table/index.js" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/../backend/create-table/package.json" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/../backend/get-reservation/index.js" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/../backend/get-reservation/package.json" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/../backend/get-table/package.json" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/../backend/update-table/index.js" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/.idea/frontend.iml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../backend/.idea/backend.iml" beforeDir="false" afterPath="$PROJECT_DIR$/../backend/.idea/backend.iml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../backend/.idea/misc.xml" beforeDir="false" afterPath="$PROJECT_DIR$/../backend/.idea/misc.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../backend/main.py" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../backend/persistance/__init__.py" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../backend/persistance/connection.py" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../backend/persistance/reservation_repository.py" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../backend/persistance/restaurant_repository.py" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../backend/persistance/table_repository.py" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../backend/service/__init__.py" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../backend/service/restaurant_service.py" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../backend/service/table_service.py" beforeDir="false" />
+    </list>
+    <option name="SHOW_DIALOG" value="false" />
+    <option name="HIGHLIGHT_CONFLICTS" value="true" />
+    <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
+    <option name="LAST_RESOLUTION" value="IGNORE" />
+  </component>
+  <component name="FileTemplateManagerImpl">
+    <option name="RECENT_TEMPLATES">
+      <list>
+        <option value="TypeScript File" />
+      </list>
+    </option>
+  </component>
+  <component name="Git.Settings">
+    <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$/.." />
+  </component>
+  <component name="MarkdownSettingsMigration">
+    <option name="stateVersion" value="1" />
+  </component>
+  <component name="ProjectColorInfo">{
+  &quot;associatedIndex&quot;: 3
+}</component>
+  <component name="ProjectId" id="2mRcLjEbei90ekYZUdvQdrm3cda" />
+  <component name="ProjectViewState">
+    <option name="hideEmptyMiddlePackages" value="true" />
+    <option name="showLibraryContents" value="true" />
+  </component>
+  <component name="PropertiesComponent">{
+  &quot;keyToString&quot;: {
+    &quot;RunOnceActivity.OpenProjectViewOnStart&quot;: &quot;true&quot;,
+    &quot;RunOnceActivity.ShowReadmeOnStart&quot;: &quot;true&quot;,
+    &quot;SONARLINT_PRECOMMIT_ANALYSIS&quot;: &quot;true&quot;,
+    &quot;git-widget-placeholder&quot;: &quot;main&quot;,
+    &quot;last_opened_file_path&quot;: &quot;/Users/marcosdedeu/WebstormProjects/cloud-booktable/frontend&quot;,
+    &quot;node.js.detected.package.eslint&quot;: &quot;true&quot;,
+    &quot;node.js.detected.package.tslint&quot;: &quot;true&quot;,
+    &quot;node.js.selected.package.eslint&quot;: &quot;(autodetect)&quot;,
+    &quot;node.js.selected.package.tslint&quot;: &quot;(autodetect)&quot;,
+    &quot;nodejs_package_manager_path&quot;: &quot;npm&quot;,
+    &quot;npm.dev.executor&quot;: &quot;Run&quot;,
+    &quot;ts.external.directory.path&quot;: &quot;/Users/marcosdedeu/WebstormProjects/cloud-booktable/frontend/node_modules/typescript/lib&quot;,
+    &quot;vue.rearranger.settings.migration&quot;: &quot;true&quot;
+  }
+}</component>
+  <component name="RunManager">
+    <configuration name="dev" type="js.build_tools.npm" nameIsGenerated="true">
+      <package-json value="$PROJECT_DIR$/package.json" />
+      <command value="run" />
+      <scripts>
+        <script value="dev" />
+      </scripts>
+      <node-interpreter value="project" />
+      <envs />
+      <method v="2" />
+    </configuration>
+  </component>
+  <component name="SpellCheckerSettings" RuntimeDictionaries="0" Folders="0" CustomDictionaries="0" DefaultDictionary="application-level" UseSingleDictionary="true" transferred="true" />
+  <component name="TaskManager">
+    <task active="true" id="Default" summary="Default task">
+      <changelist id="8eda5742-6782-436c-8f3e-1972753a0452" name="Changes" comment="" />
+      <created>1727042775741</created>
+      <option name="number" value="Default" />
+      <option name="presentableId" value="Default" />
+      <updated>1727042775741</updated>
+      <workItem from="1727042776809" duration="4834000" />
+      <workItem from="1727049079303" duration="7612000" />
+      <workItem from="1727059084455" duration="1279000" />
+      <workItem from="1727128775256" duration="3423000" />
+      <workItem from="1727144824181" duration="1821000" />
+      <workItem from="1727235404444" duration="2164000" />
+      <workItem from="1727270869348" duration="834000" />
+    </task>
+    <task id="LOCAL-00001" summary="fix: integrating with backend">
+      <option name="closed" value="true" />
+      <created>1727044155199</created>
+      <option name="number" value="00001" />
+      <option name="presentableId" value="LOCAL-00001" />
+      <option name="project" value="LOCAL" />
+      <updated>1727044155199</updated>
+    </task>
+    <task id="LOCAL-00002" summary="feat: get tables working">
+      <option name="closed" value="true" />
+      <created>1727049850189</created>
+      <option name="number" value="00002" />
+      <option name="presentableId" value="LOCAL-00002" />
+      <option name="project" value="LOCAL" />
+      <updated>1727049850189</updated>
+    </task>
+    <task id="LOCAL-00003" summary="feat: table_availability showing ok">
+      <option name="closed" value="true" />
+      <created>1727054187465</created>
+      <option name="number" value="00003" />
+      <option name="presentableId" value="LOCAL-00003" />
+      <option name="project" value="LOCAL" />
+      <updated>1727054187465</updated>
+    </task>
+    <task id="LOCAL-00004" summary="feat: table creation">
+      <option name="closed" value="true" />
+      <created>1727058156262</created>
+      <option name="number" value="00004" />
+      <option name="presentableId" value="LOCAL-00004" />
+      <option name="project" value="LOCAL" />
+      <updated>1727058156262</updated>
+    </task>
+    <task id="LOCAL-00005" summary="fix: compiling">
+      <option name="closed" value="true" />
+      <created>1727058809302</created>
+      <option name="number" value="00005" />
+      <option name="presentableId" value="LOCAL-00005" />
+      <option name="project" value="LOCAL" />
+      <updated>1727058809302</updated>
+    </task>
+    <task id="LOCAL-00006" summary="fix: compiling">
+      <option name="closed" value="true" />
+      <created>1727059800170</created>
+      <option name="number" value="00006" />
+      <option name="presentableId" value="LOCAL-00006" />
+      <option name="project" value="LOCAL" />
+      <updated>1727059800170</updated>
+    </task>
+    <task id="LOCAL-00007" summary="fix: metadata">
+      <option name="closed" value="true" />
+      <created>1727142573165</created>
+      <option name="number" value="00007" />
+      <option name="presentableId" value="LOCAL-00007" />
+      <option name="project" value="LOCAL" />
+      <updated>1727142573165</updated>
+    </task>
+    <task id="LOCAL-00008" summary="fix: assume available if no data">
+      <option name="closed" value="true" />
+      <created>1727237669619</created>
+      <option name="number" value="00008" />
+      <option name="presentableId" value="LOCAL-00008" />
+      <option name="project" value="LOCAL" />
+      <updated>1727237669619</updated>
+    </task>
+    <option name="localTasksCounter" value="9" />
+    <servers />
+  </component>
+  <component name="TypeScriptGeneratedFilesManager">
+    <option name="version" value="3" />
+  </component>
+  <component name="VcsManagerConfiguration">
+    <MESSAGE value="fix: integrating with backend" />
+    <MESSAGE value="feat: get tables working" />
+    <MESSAGE value="feat: table_availability showing ok" />
+    <MESSAGE value="feat: table creation" />
+    <MESSAGE value="fix: compiling" />
+    <MESSAGE value="fix: metadata" />
+    <MESSAGE value="fix: assume available if no data" />
+    <option name="LAST_COMMIT_MESSAGE" value="fix: assume available if no data" />
+  </component>
+</project>
