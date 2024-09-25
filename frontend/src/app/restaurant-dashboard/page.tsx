@@ -33,6 +33,7 @@ interface Table {
 interface Reservation {
     id: number;
     name: string;
+    email: string;
     date: string;
     time_slot: string;
     guests: number;
