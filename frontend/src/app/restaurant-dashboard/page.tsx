@@ -138,11 +138,11 @@ export default function IntegratedRestaurantDashboard() {
 
     const getTableAvailability = (table: Table, date: Date, timeSlot: string): boolean => {
         if (!table.availability || table.availability.length === 0) {
-            return false // Assume available if no data
+            return true // Assume available if no data
         }
         const dateString = format(date, 'yyyy-MM-dd')
         const availabilityForDate = table.availability.find(a => a.date === dateString)
-        return availabilityForDate?.times[timeSlot] ?? false // Assume available if no data for the date
+        return availabilityForDate?.times[timeSlot] ?? true // Assume available if no data for the date
     }
 
     if (isLoading) {
