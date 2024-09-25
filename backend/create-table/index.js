@@ -20,8 +20,7 @@ exports.handler = async (event, context) => {
         const res = await client.query("insert into tables(capacity) values ($1)", [body.capacity]);
         await client.end();
         return {
-            statusCode: 200,
-            body: { id: res.rows[0].id },
+            statusCode: 200
         };
     } catch (error) {
         console.error('Connection error details:', error);
