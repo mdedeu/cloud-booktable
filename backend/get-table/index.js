@@ -14,60 +14,50 @@ exports.handler = async (event, context) => {
 
     try {
         // Get all tables
-        const tablesRes = await client.query('SELECT id, capacity FROM tables');
+        const tablesRes = await client.query('SELECT * FROM tables LEFT JOIN reservations on reservations.table_id = tables.id');
         const tables = tablesRes.rows;
+        const resultMap = {};
 
-        // Prepare the result
-        const results = await Promise.all(tables.map(async (table) => {
-            const availability = [];
+        // Process the fetched data
+        tables.forEach(row => {
+            const { table_id, capacity, date, time_slot } = row;
 
-            const today = new Date();
-            const nextMonth = new Date(today.getFullYear(), today.getMonth() + 1, 1);
-
-            // Create an array for the dates of the next month
-            const datesToCheck = [];
-            for (let day = 1; day <= 31; day++) {
-                const date = new Date(nextMonth.getFullYear(), nextMonth.getMonth(), day);
-                if (date.getMonth() === nextMonth.getMonth()) {
-                    datesToCheck.push(date.toISOString().split('T')[0]); // Format YYYY-MM-DD
-                }
-            }
-
-            for (const date of datesToCheck) {
-                const times = {
-                    "12:00 PM": true,
-                    "1:00 PM": true,
-                    "2:00 PM": true,
-                    "3:00 PM": true,
+            // Initialize the table entry if it doesn't exist
+            if (!resultMap[table_id]) {
+                resultMap[table_id] = {
+                    id: table_id,
+                    capacity,
+                    availability: [],
                 };
-
-                // Check reservations for this table on the specific date
-                const reservationsRes = await client.query(
-                    `SELECT time_slot FROM reservations WHERE table_id = $1 AND date = $2`,
-                    [table.id, date]
-                );
-
-                // If there are reservations, set corresponding time slots to false
-                reservationsRes.rows.forEach(row => {
-                    const reservedTime = row.time_slot;
-                    if (times.hasOwnProperty(reservedTime)) {
-                        times[reservedTime] = false; // Mark as unavailable
-                    }
-                });
-
-                availability.push({ date, times });
+            }
+            let availabilityEntry = resultMap[table_id].availability.find(avail => avail.date === date);
+            if (!availabilityEntry) {
+                availabilityEntry = {
+                    date,
+                    times: {
+                        "12:00 PM": true,
+                        "1:00 PM": true,
+                        "2:00 PM": true,
+                        "3:00 PM": true,
+                    },
+                };
+                resultMap[table_id].availability.push(availabilityEntry);
             }
 
-            return {
-                id: table.id,
-                capacity: table.capacity,
-                availability,
-            };
-        }));
+            // Mark the time slot as unavailable if there's a reservation
+            if (time_slot) {
+                availabilityEntry.times[time_slot] = false; // Set to false if reserved
+            }
+        });
+        const results = Object.values(resultMap);
 
         return {
             statusCode: 200,
             body: JSON.stringify(results),
+            headers:{
+                'Access-Control-Allow-Origin': '*',
+                'Access-Control-Allow-Methods': 'GET'
+            }
         };
     } catch (error) {
         console.error(error);
