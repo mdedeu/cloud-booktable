@@ -7,16 +7,14 @@ import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { CalendarIcon, ClockIcon, UsersIcon, CheckCircle, Loader2 } from "lucide-react"
-import { format, parse, isSameDay } from "date-fns"
+import { format, isSameDay, parseISO } from "date-fns"
 import { Calendar } from "@/components/ui/calendar"
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover"
 import { toast, ToastContainer } from 'react-toastify'
 import 'react-toastify/dist/ReactToastify.css'
-import {tableService} from "@/lib/table_service";
-import {reservationService} from "@/lib/reservation_service";
-import {Table} from "@/lib/types";
-
-
+import { tableService } from "@/lib/table_service"
+import { reservationService } from "@/lib/reservation_service"
+import { Table } from "@/lib/types"
 
 export default function IntegratedCustomerBooking() {
     const [tables, setTables] = useState<Table[]>([])
@@ -65,12 +63,14 @@ export default function IntegratedCustomerBooking() {
         const dates = new Set<string>()
         tables.forEach(table => {
             table.availability.forEach(slot => {
-                if (Object.values(slot.times).some(available => available)) {
+                if (slot.date && Object.values(slot.times).some(available => available)) {
                     dates.add(slot.date)
                 }
             })
         })
-        return Array.from(dates).map(dateString => parse(dateString, 'yyyy-MM-dd', new Date()))
+        return Array.from(dates)
+            .filter((dateString) => dateString != null)
+            .map(dateString => parseISO(dateString))
     }
 
     const handleDateChange = (newDate: Date | undefined) => {
@@ -78,10 +78,10 @@ export default function IntegratedCustomerBooking() {
         setSelectedTable(null)
         setSelectedTime(null)
         if (newDate) {
-            const formattedDate = format(newDate, 'yyyy-MM-dd')
+            format(newDate, 'yyyy-MM-dd');
             const times = new Set<string>()
             filteredTables.forEach(table => {
-                const dateSlot = table.availability.find(slot => slot.date === formattedDate)
+                const dateSlot = table.availability.find(slot => slot.date && isSameDay(parseISO(slot.date), newDate))
                 if (dateSlot) {
                     Object.entries(dateSlot.times).forEach(([time, available]) => {
                         if (available) times.add(time)
@@ -97,10 +97,9 @@ export default function IntegratedCustomerBooking() {
     const handleTimeChange = (time: string) => {
         setSelectedTime(time)
         if (date) {
-            const formattedDate = format(date, 'yyyy-MM-dd')
             const availableTablesForDateTime = filteredTables.filter(table =>
                 table.availability.some(slot =>
-                    slot.date === formattedDate && slot.times[time]
+                    slot.date && isSameDay(parseISO(slot.date), date) && slot.times[time]
                 )
             )
             if (availableTablesForDateTime.length > 0) {
@@ -117,16 +116,17 @@ export default function IntegratedCustomerBooking() {
         e.preventDefault()
         setIsLoading(true)
         const formData = new FormData(e.currentTarget)
-        const bookingData = {
-            ...Object.fromEntries(formData),
+        const reservationData = {
+            table_id: selectedTable,
+            name: formData.get('name') as string,
+            email: formData.get('email') as string,
             date: date ? format(date, 'yyyy-MM-dd') : '',
-            time: selectedTime,
-            tableId: selectedTable
+            time_slot: selectedTime,
+            guests: guests
         }
-        console.log(bookingData)
 
         try {
-            await reservationService.createReservation(bookingData)
+            await reservationService.createReservation(reservationData)
             setBookingComplete(true)
             toast.success("Reservation created successfully!")
         } catch (error) {

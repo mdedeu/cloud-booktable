@@ -25,7 +25,6 @@ class TableService {
             body: JSON.stringify(table)
         });
         const jsonResponse = await response.json();
-        console.log(jsonResponse);
         return JSON.parse(jsonResponse.body);
     }
 

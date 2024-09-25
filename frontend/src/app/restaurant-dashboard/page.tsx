@@ -27,7 +27,7 @@ interface TableAvailability {
 interface Table {
     id: number;
     capacity: number;
-    availability: TableAvailability[];
+    availability?: TableAvailability[];
 }
 
 interface Reservation {
@@ -79,17 +79,8 @@ export default function IntegratedRestaurantDashboard() {
         e.preventDefault()
         const formData = new FormData(e.currentTarget)
         const capacity = Number(formData.get("capacity"))
-        const newTable: Partial<Table> = {
-            capacity,
-            availability: [
-                {
-                    date: format(selectedDate, 'yyyy-MM-dd'),
-                    times: timeSlots.reduce((acc, slot) => ({ ...acc, [slot]: true }), {})
-                }
-            ]
-        }
         try {
-            const createdTable = await tableService.createTable(newTable)
+            const createdTable = await tableService.createTable(capacity)
             setTables([...tables, createdTable])
             toast.success("New table added successfully!")
         } catch (error) {
@@ -103,10 +94,10 @@ export default function IntegratedRestaurantDashboard() {
         const table = tables.find(t => t.id === id)
         if (!table) return
 
-        const availabilityIndex = table.availability.findIndex(a => a.date === dateString)
+        const availabilityIndex = table.availability?.findIndex(a => a.date === dateString)
         let updatedAvailability: TableAvailability[]
 
-        if (availabilityIndex !== -1) {
+        if (availabilityIndex && availabilityIndex !== -1) {
             updatedAvailability = [...table.availability]
             updatedAvailability[availabilityIndex] = {
                 ...updatedAvailability[availabilityIndex],

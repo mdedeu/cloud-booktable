@@ -1,4 +1,3 @@
-
 exports.handler = async (event, context) => {
     const { Client } = require('pg');
     const client = new Client({
@@ -7,16 +6,29 @@ exports.handler = async (event, context) => {
         database: process.env.RDS_DB_NAME,
         user: process.env.RDS_USER,
         password: process.env.RDS_PASSWORD,
-        ssl:true
+        ssl: true
     });
 
     await client.connect();
 
     try {
         // Get all tables
-        const tablesRes = await client.query('SELECT * FROM tables LEFT JOIN reservations on reservations.table_id = tables.id');
+        const tablesRes = await client.query(`
+            SELECT tables.id AS table_id, capacity, reservations.date AS date, reservations.time_slot AS time_slot 
+            FROM tables 
+            LEFT JOIN reservations ON tables.id = reservations.table_id
+        `);
         const tables = tablesRes.rows;
         const resultMap = {};
+
+        // Define a mapping for time formats
+        const timeFormatMap = {
+            "12:00:00": "12:00 PM",
+            "13:00:00": "1:00 PM",
+            "14:00:00": "2:00 PM",
+            "15:00:00": "3:00 PM",
+            // Add more mappings as needed
+        };
 
         // Process the fetched data
         tables.forEach(row => {
@@ -30,6 +42,7 @@ exports.handler = async (event, context) => {
                     availability: [],
                 };
             }
+
             let availabilityEntry = resultMap[table_id].availability.find(avail => avail.date === date);
             if (!availabilityEntry) {
                 availabilityEntry = {
@@ -44,17 +57,19 @@ exports.handler = async (event, context) => {
                 resultMap[table_id].availability.push(availabilityEntry);
             }
 
-            // Mark the time slot as unavailable if there's a reservation
+            // Normalize the time slot using the mapping
             if (time_slot) {
-                availabilityEntry.times[time_slot] = false; // Set to false if reserved
+                const formattedTimeSlot = timeFormatMap[time_slot] || time_slot; // Use the mapped value or the original
+                availabilityEntry.times[formattedTimeSlot] = false; // Set to false if reserved
             }
         });
+
         const results = Object.values(resultMap);
 
         return {
             statusCode: 200,
             body: JSON.stringify(results),
-            headers:{
+            headers: {
                 'Access-Control-Allow-Origin': '*',
                 'Access-Control-Allow-Methods': 'GET'
             }

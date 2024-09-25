@@ -4,29 +4,7 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="8eda5742-6782-436c-8f3e-1972753a0452" name="Changes" comment="fix: assume available if no data">
-      <change afterPath="$PROJECT_DIR$/../backend/.idea/jsLibraryMappings.xml" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/../backend/create-reservation/index.js" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/../backend/create-reservation/package.json" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/../backend/create-table/index.js" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/../backend/create-table/package.json" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/../backend/get-reservation/index.js" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/../backend/get-reservation/package.json" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/../backend/get-table/package.json" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/../backend/update-table/index.js" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/.idea/frontend.iml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../backend/.idea/backend.iml" beforeDir="false" afterPath="$PROJECT_DIR$/../backend/.idea/backend.iml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../backend/.idea/misc.xml" beforeDir="false" afterPath="$PROJECT_DIR$/../backend/.idea/misc.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../backend/main.py" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/../backend/persistance/__init__.py" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/../backend/persistance/connection.py" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/../backend/persistance/reservation_repository.py" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/../backend/persistance/restaurant_repository.py" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/../backend/persistance/table_repository.py" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/../backend/service/__init__.py" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/../backend/service/restaurant_service.py" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/../backend/service/table_service.py" beforeDir="false" />
-    </list>
+    <list default="true" id="8eda5742-6782-436c-8f3e-1972753a0452" name="Changes" comment="fix: frontend reservations table" />
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
     <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
@@ -97,6 +75,7 @@
       <workItem from="1727144824181" duration="1821000" />
       <workItem from="1727235404444" duration="2164000" />
       <workItem from="1727270869348" duration="834000" />
+      <workItem from="1727279238590" duration="617000" />
     </task>
     <task id="LOCAL-00001" summary="fix: integrating with backend">
       <option name="closed" value="true" />
@@ -162,7 +141,23 @@
       <option name="project" value="LOCAL" />
       <updated>1727237669619</updated>
     </task>
-    <option name="localTasksCounter" value="9" />
+    <task id="LOCAL-00009" summary="fix: frontend reservations table">
+      <option name="closed" value="true" />
+      <created>1727279322970</created>
+      <option name="number" value="00009" />
+      <option name="presentableId" value="LOCAL-00009" />
+      <option name="project" value="LOCAL" />
+      <updated>1727279322970</updated>
+    </task>
+    <task id="LOCAL-00010" summary="fix: frontend reservations table">
+      <option name="closed" value="true" />
+      <created>1727279341314</created>
+      <option name="number" value="00010" />
+      <option name="presentableId" value="LOCAL-00010" />
+      <option name="project" value="LOCAL" />
+      <updated>1727279341314</updated>
+    </task>
+    <option name="localTasksCounter" value="11" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -176,6 +171,7 @@
     <MESSAGE value="fix: compiling" />
     <MESSAGE value="fix: metadata" />
     <MESSAGE value="fix: assume available if no data" />
-    <option name="LAST_COMMIT_MESSAGE" value="fix: assume available if no data" />
+    <MESSAGE value="fix: frontend reservations table" />
+    <option name="LAST_COMMIT_MESSAGE" value="fix: frontend reservations table" />
   </component>
 </project>
