@@ -64,7 +64,7 @@ resource "aws_vpc_endpoint" "dynamodb" {
 #############################
 
 resource "aws_s3_bucket" "frontend_bucket" {
-  bucket = "frontend-bucket-cloudbooktable-marcos"  
+  bucket = "frontend-bucket-cloudbooktable-matias"  
 
   tags = {
     Name        = "Frontend Bucket"
@@ -227,7 +227,7 @@ resource "aws_dynamodb_table" "restaurantes_table" {
   }
 }
 ##########LAMBDAS 
-#Lambda para Crear Mesa                                                                    
+#Lambda para Crear Mesa                                                                     
 resource "aws_lambda_function" "crear_mesa_lambda" {
   filename         = data.archive_file.crear_mesa_zip.output_path
   function_name    = "CrearMesaLambda"
@@ -387,46 +387,58 @@ resource "aws_lambda_permission" "api_gateway_reservas" {
 
 ###########CORS############
 
-#OPTIONS CORS
-resource "aws_api_gateway_method" "options_method" {
-    rest_api_id   = "${aws_api_gateway_rest_api.my_api.id}"
-    resource_id   = "${aws_api_gateway_resource.reservas.id}"
-    http_method   = "OPTIONS"
-    authorization = "NONE"
+
+# CORS OPTIONS Method
+resource "aws_api_gateway_method" "options_reservas" {
+  rest_api_id   = aws_api_gateway_rest_api.my_api.id
+  resource_id   = aws_api_gateway_resource.reservas.id
+  http_method   = "OPTIONS"
+  authorization = "NONE"
 }
 
-resource "aws_api_gateway_method_response" "options_200" {
-    rest_api_id   = "${aws_api_gateway_rest_api.my_api.id}"
-    resource_id   = "${aws_api_gateway_resource.reservas.id}"
-    http_method   = "${aws_api_gateway_method.options_method.http_method}"
-    status_code   = "200"
-    response_parameters = {
-      "method.response.header.Access-Control-Allow-Headers" = true,
-      "method.response.header.Access-Control-Allow-Methods" = true,
-      "method.response.header.Access-Control-Allow-Origin" = true
-    }
-    depends_on = [aws_api_gateway_method.options_method]
+# CORS OPTIONS Integration
+resource "aws_api_gateway_integration" "options_integration_reservas" {
+  rest_api_id = aws_api_gateway_rest_api.my_api.id
+  resource_id = aws_api_gateway_resource.reservas.id
+  http_method = aws_api_gateway_method.options_reservas.http_method
+  type        = "MOCK"
+  request_templates = {
+    "application/json" = jsonencode({
+      statusCode = 200
+    })
+  }
 }
 
-resource "aws_api_gateway_integration" "options_integration" {
-    rest_api_id   = "${aws_api_gateway_rest_api.my_api.id}"
-    resource_id   = "${aws_api_gateway_resource.reservas.id}"
-    http_method   = "${aws_api_gateway_method.options_method.http_method}"
-    type          = "MOCK"
-    depends_on = [aws_api_gateway_method.options_method]
+# CORS OPTIONS Method Response
+resource "aws_api_gateway_method_response" "options_method_response_reservas" {
+  rest_api_id = aws_api_gateway_rest_api.my_api.id
+  resource_id = aws_api_gateway_resource.reservas.id
+  http_method = aws_api_gateway_method.options_reservas.http_method
+  status_code = "200"
+  
+  response_parameters = {
+    "method.response.header.Access-Control-Allow-Headers" = true,
+    "method.response.header.Access-Control-Allow-Methods" = true,
+    "method.response.header.Access-Control-Allow-Origin"  = true
+  }
+
+  response_models = {
+    "application/json" = "Empty"
+  }
 }
 
-resource "aws_api_gateway_integration_response" "options_integration_response" {
-    rest_api_id   = "${aws_api_gateway_rest_api.my_api.id}"
-    resource_id   = "${aws_api_gateway_resource.reservas.id}"
-    http_method   = "${aws_api_gateway_method.options_method.http_method}"
-    status_code   = "${aws_api_gateway_method_response.options_200.status_code}"
-    response_parameters = {
-        "method.response.header.Access-Control-Allow-Headers" = "'Content-Type,X-Amz-Date,Authorization,X-Api-Key,X-Amz-Security-Token'",
-        "method.response.header.Access-Control-Allow-Methods" = "'GET,OPTIONS,POST,PUT'",
-        "method.response.header.Access-Control-Allow-Origin" = "'*'"
-    }
-    depends_on = [aws_api_gateway_method_response.options_200]
+# CORS OPTIONS Integration Response
+resource "aws_api_gateway_integration_response" "options_integration_response_reservas" {
+  rest_api_id = aws_api_gateway_rest_api.my_api.id
+  resource_id = aws_api_gateway_resource.reservas.id
+  http_method = aws_api_gateway_method.options_reservas.http_method
+  status_code = aws_api_gateway_method_response.options_method_response_reservas.status_code
+  
+  response_parameters = {
+    "method.response.header.Access-Control-Allow-Headers" = "'Content-Type,X-Amz-Date,Authorization,X-Api-Key,X-Amz-Security-Token'",
+    "method.response.header.Access-Control-Allow-Methods" = "'GET,OPTIONS,POST,PUT'",
+    "method.response.header.Access-Control-Allow-Origin"  = "'*'"
+  }
 }
 
 ############
@@ -476,7 +488,21 @@ resource "aws_api_gateway_deployment" "my_api_deployment" {
     aws_api_gateway_integration.lambda_integration_reservas,
     aws_api_gateway_integration.lambda_integration_admin_restaurant,
     aws_api_gateway_integration.lambda_integration_admin_mesas,
+    aws_api_gateway_integration.options_integration_reservas,
+    aws_api_gateway_integration_response.options_integration_response_reservas
   ]
   rest_api_id = aws_api_gateway_rest_api.my_api.id
   stage_name  = "prod"
+
+  triggers = {
+    redeployment = sha1(jsonencode([
+      aws_api_gateway_resource.reservas,
+      aws_api_gateway_method.options_reservas,
+      aws_api_gateway_integration.options_integration_reservas,
+    ]))
+  }
+
+  lifecycle {
+    create_before_destroy = true
+  }
 }
