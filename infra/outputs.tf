@@ -9,7 +9,11 @@ output "api_gateway_url" {
 
 output "s3_bucket_name" {
   description = "Nombre del bucket S3"
-  value       = aws_s3_bucket.my_bucket.bucket
+  value       = aws_s3_bucket.frontend_bucket.bucket
+}
+
+output "website_endpoint" {
+  value = aws_s3_bucket_website_configuration.frontend_bucket.website_endpoint
 }
 
 #############################

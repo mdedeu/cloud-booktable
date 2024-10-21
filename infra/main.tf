@@ -45,17 +45,6 @@ resource "aws_security_group" "lambda_sg" {
 }
 
 # VPC Endpoints
-resource "aws_vpc_endpoint" "s3" {
-  vpc_id            = module.vpc.vpc_id
-  service_name      = "com.amazonaws.us-east-1.s3"
-  vpc_endpoint_type = "Gateway"
-
-  route_table_ids = module.vpc.private_route_table_ids
-
-  tags = {
-    Name = "S3 VPC Endpoint"
-  }
-}
 
 resource "aws_vpc_endpoint" "dynamodb" {
   vpc_id            = module.vpc.vpc_id
@@ -74,24 +63,74 @@ resource "aws_vpc_endpoint" "dynamodb" {
 # S3 Bucket
 #############################
 
-resource "aws_s3_bucket" "my_bucket" {
-  bucket = "mi-bucket-terraform-de-prueba-1"  
+resource "aws_s3_bucket" "frontend_bucket" {
+  bucket = "frontend-bucket-cloudbooktable-marcos"  
 
   tags = {
-    Name        = "Mi Bucket S3"
+    Name        = "Frontend Bucket"
     Environment = "Dev"
   }
 }
 
+resource "aws_s3_bucket_website_configuration" "frontend_bucket" {
+  bucket = aws_s3_bucket.frontend_bucket.id
+
+  index_document {
+    suffix = "index.html"
+  }
+
+  error_document {
+    key = "error.html"
+  }
+}
+
+resource "aws_s3_bucket_policy" "frontend_bucket_policy" {
+  bucket = aws_s3_bucket.frontend_bucket.id
+
+  policy = jsonencode({
+    Version = "2012-10-17"
+    Statement = [
+      {
+        Sid       = "PublicReadGetObject"
+        Effect    = "Allow"
+        Principal = "*"
+        Action    = "s3:GetObject"
+        Resource  = "${aws_s3_bucket.frontend_bucket.arn}/*"
+      },
+    ]
+  })
+}
+
+# Null resource for building and deploying frontend
+resource "null_resource" "frontend_deployment" {
+  triggers = {
+    api_gateway_url = aws_api_gateway_deployment.my_api_deployment.invoke_url
+  }
+
+  provisioner "local-exec" {
+    command = <<EOT
+      cd ${path.module}/../frontend
+      echo "NEXT_PUBLIC_BACKEND_URL=${aws_api_gateway_deployment.my_api_deployment.invoke_url}" > .env
+      npm run build
+      aws s3 sync out s3://${aws_s3_bucket.frontend_bucket.id} --delete
+    EOT
+  }
+
+  depends_on = [
+    aws_api_gateway_deployment.my_api_deployment,
+    aws_s3_bucket.frontend_bucket,
+    aws_s3_bucket_policy.frontend_bucket_policy
+  ]
+}
 #############################
 # DynamoDB Table
 #############################
-
+# RESERVAS Table
 resource "aws_dynamodb_table" "reservas_table" {
   name         = "RESERVAS"
   billing_mode = "PAY_PER_REQUEST"
   hash_key     = "Nombre_restaurant"
-  range_key = "Fecha_hora"
+  range_key    = "Fecha_hora"
 
   attribute {
     name = "Nombre_restaurant"
@@ -99,13 +138,19 @@ resource "aws_dynamodb_table" "reservas_table" {
   }
   
   attribute {
-    name= "Fecha_hora"
+    name = "Fecha_hora"
     type = "N"
   }
 
   attribute {
     name = "ID_Mesa"
     type = "S"
+  }
+
+  global_secondary_index {
+    name               = "ID_MesaIndex"
+    hash_key           = "ID_Mesa"
+    projection_type    = "ALL"
   }
 
   tags = {
@@ -114,11 +159,12 @@ resource "aws_dynamodb_table" "reservas_table" {
   }
 }
 
+# MESAS Table
 resource "aws_dynamodb_table" "mesas_table" {
   name         = "MESAS"
   billing_mode = "PAY_PER_REQUEST"
   hash_key     = "Nombre_restaurant"
-  range_key = "Capacidad"
+  range_key    = "Capacidad"
 
   attribute {
     name = "Nombre_restaurant"
@@ -126,7 +172,7 @@ resource "aws_dynamodb_table" "mesas_table" {
   }
 
   attribute {
-    name= "Capacidad"
+    name = "Capacidad"
     type = "N"
   }
 
@@ -135,18 +181,24 @@ resource "aws_dynamodb_table" "mesas_table" {
     type = "S"
   }
 
+  global_secondary_index {
+    name               = "ID_MesaIndex"
+    hash_key           = "ID_Mesa"
+    projection_type    = "ALL"
+  }
+
   tags = {
     Name        = "Tabla Mesas"
     Environment = "Dev"
   }
 }
 
-
+# USUARIOS Table
 resource "aws_dynamodb_table" "usuarios_table" {
   name         = "USUARIOS"
   billing_mode = "PAY_PER_REQUEST"
   hash_key     = "ID_Usuario"
-  range_key = "Fecha_hora"
+  range_key    = "Fecha_hora"
 
   attribute {
     name = "ID_Usuario"
@@ -154,14 +206,19 @@ resource "aws_dynamodb_table" "usuarios_table" {
   }
 
   attribute {
-    name= "Fecha_hora"
+    name = "Fecha_hora"
     type = "N"
   }
-  //faltan los atributos
 
   attribute {
     name = "ID_Reserva"
     type = "S"
+  }
+
+  global_secondary_index {
+    name               = "ID_ReservaIndex"
+    hash_key           = "ID_Reserva"
+    projection_type    = "ALL"
   }
 
   tags = {
@@ -170,11 +227,12 @@ resource "aws_dynamodb_table" "usuarios_table" {
   }
 }
 
+# RESTAURANTES Table
 resource "aws_dynamodb_table" "restaurantes_table" {
   name         = "RESTAURANTES"
   billing_mode = "PAY_PER_REQUEST"
   hash_key     = "Localidad"
-  range_key = "Categoria_Restaurant"
+  range_key    = "Categoria_Restaurant"
   
   attribute {
     name = "Localidad"
@@ -191,14 +249,17 @@ resource "aws_dynamodb_table" "restaurantes_table" {
     type = "S"
   }
 
+  global_secondary_index {
+    name               = "ID_UsuarioIndex"
+    hash_key           = "ID_Usuario"
+    projection_type    = "ALL"
+  }
+
   tags = {
     Name        = "Tabla Restaurantes"
     Environment = "Dev"
   }
 }
-
-
-
 #############################
 # Empaquetar el Código de Lambda
 #############################
@@ -206,8 +267,8 @@ resource "aws_dynamodb_table" "restaurantes_table" {
 #Para codigo de lambda hello
 data "archive_file" "crear_mesa_zip" {
   type        = "zip"
-  source_dir  = "${path.module}/crear-mesa"
-  output_path = "${path.module}/crear_mesa_code/crear_mesa.zip"
+  source_dir  = "${path.module}/../backend/crear-mesa"
+  output_path = "${path.module}/../backend/crear-mesa/crear_mesa.zip"
 }
 
 #############################
