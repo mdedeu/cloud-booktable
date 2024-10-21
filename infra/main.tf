@@ -131,7 +131,14 @@ resource "aws_dynamodb_table" "reservas_table" {
   name         = "RESERVAS"
   billing_mode = "PAY_PER_REQUEST"
   hash_key     = "Nombre_restaurant"
-  range_key = {
+  range_key = "Fecha_hora"
+
+  attribute {
+    name = "Nombre_restaurant"
+    type = "S"
+  }
+  
+  attribute {
     name= "Fecha_hora"
     type = "N"
   }
@@ -151,7 +158,14 @@ resource "aws_dynamodb_table" "mesas_table" {
   name         = "MESAS"
   billing_mode = "PAY_PER_REQUEST"
   hash_key     = "Nombre_restaurant"
-  range_key = {
+  range_key = "Capacidad"
+
+  attribute {
+    name = "Nombre_restaurant"
+    type = "S"
+  }
+
+  attribute {
     name= "Capacidad"
     type = "N"
   }
@@ -172,7 +186,14 @@ resource "aws_dynamodb_table" "usuarios_table" {
   name         = "USUARIOS"
   billing_mode = "PAY_PER_REQUEST"
   hash_key     = "ID_Usuario"
-  range_key = {
+  range_key = "Fecha_hora"
+
+  attribute {
+    name = "ID_Usuario"
+    type = "S"
+  }
+
+  attribute {
     name= "Fecha_hora"
     type = "N"
   }
@@ -194,6 +215,16 @@ resource "aws_dynamodb_table" "restaurantes_table" {
   billing_mode = "PAY_PER_REQUEST"
   hash_key     = "Localidad"
   range_key = "Categoria_Restaurant"
+  
+  attribute {
+    name = "Localidad"
+    type = "S"
+  }
+
+  attribute {
+    name = "Categoria_Restaurant"
+    type = "S"
+  }
 
   attribute {
     name = "ID_Usuario"
@@ -213,33 +244,25 @@ resource "aws_dynamodb_table" "restaurantes_table" {
 #############################
 
 #Para codigo de lambda hello
-data "archive_file" "lambda_hello_zip" {
+data "archive_file" "crear_mesa_zip" {
   type        = "zip"
-  source_dir  = "${path.module}/lambda_code_hello"
-  output_path = "${path.module}/lambda_code_hello/lambda_hello.zip"
-}
-
-
-#Para codigo de lambda proxy
-data "archive_file" "lambda_proxy_zip" {
-  type        = "zip"
-  source_dir  = "${path.module}/lambda_code_proxy"
-  output_path = "${path.module}/lambda_code_proxy/lambda_proxy.zip"
+  source_dir  = "${path.module}/crear-mesa"
+  output_path = "${path.module}/crear_mesa_code/crear_mesa.zip"
 }
 
 #############################
 # Lambda Functions
 #############################
 
-                                                                      #En esta parte hago lambda para una ruta en especifico o para un proxy que basicamente te redirige cualquier endpoint que le metas a la funcion lambda (el proxy)
+#En esta parte hago lambda para una ruta en especifico o para un proxy que basicamente te redirige cualquier endpoint que le metas a la funcion lambda (el proxy)
 #Lambda para Hello                                                                     
-resource "aws_lambda_function" "my_lambda_hello" {
-  filename         = data.archive_file.lambda_hello_zip.output_path
-  function_name    = "MiFuncionLambdaHello"
+resource "aws_lambda_function" "crear_mesa_lambda" {
+  filename         = data.archive_file.crear_mesa_zip.output_path
+  function_name    = "CrearMesaLambda"
   role             = var.lambda_execution_role_arn
   handler          = "index.handler"  
   runtime          = "nodejs20.x"    
-  source_code_hash = data.archive_file.lambda_hello_zip.output_base64sha256
+  source_code_hash = data.archive_file.crear_mesa_zip.output_base64sha256
 
   vpc_config {
     subnet_ids         = [aws_subnet.sn1.id, aws_subnet.sn2.id]
@@ -252,27 +275,6 @@ resource "aws_lambda_function" "my_lambda_hello" {
   }
 }
 
-#Lambda para Proxy
-resource "aws_lambda_function" "my_lambda_proxy" {
-  filename         = data.archive_file.lambda_proxy_zip.output_path
-  function_name    = "MiFuncionLambdaProxy"
-  role             = var.lambda_execution_role_arn
-  handler          = "index.handler"  
-  runtime          = "nodejs20.x"    
-  source_code_hash = data.archive_file.lambda_proxy_zip.output_base64sha256
-
-  vpc_config {
-    subnet_ids         = [aws_subnet.sn1.id, aws_subnet.sn2.id]
-    security_group_ids = [aws_security_group.lambda_sg.id]
-  }
-
-  tags = {
-    Name        = "Mi Función Lambda Proxy"
-    Environment = "Dev"
-  }
-}
-
-
 #############################
 # API Gateway
 #############################
@@ -281,10 +283,6 @@ resource "aws_api_gateway_rest_api" "my_api" {
   name        = "MiAPI"
   description = "API Gateway para mi aplicación"
 }
-
-
-
-#SIN PROXY##############################################
 
 #Definir un recurso específico, por ejemplo, "hello"
 resource "aws_api_gateway_resource" "hello" {
@@ -301,99 +299,17 @@ resource "aws_api_gateway_method" "hello_method" {
   authorization = "NONE"
 }
 
-# Integración del método "hello_method" con Lambda
-resource "aws_api_gateway_integration" "hello_integration" {
-  rest_api_id             = aws_api_gateway_rest_api.my_api.id
-  resource_id             = aws_api_gateway_resource.hello.id
-  http_method             = aws_api_gateway_method.hello_method.http_method
-  integration_http_method = "POST"
-  type                    = "AWS_PROXY"
-  uri                     = aws_lambda_function.my_lambda_hello.invoke_arn
-}
-
 # Permisos para que API Gateway invoque Lambda
 resource "aws_lambda_permission" "api_gateway_hello" {
   statement_id  = "AllowAPIGatewayInvokeHello"
   action        = "lambda:InvokeFunction"
-  function_name = aws_lambda_function.my_lambda_hello.function_name
+  function_name = aws_lambda_function.crear_mesa_lambda.function_name
   principal     = "apigateway.amazonaws.com"
   source_arn = "${aws_api_gateway_rest_api.my_api.execution_arn}/prod/GET/hello"
 
 }
-#######################################################
-
-
-#CON PROXY###########################
-resource "aws_api_gateway_resource" "proxy" {
-  rest_api_id = aws_api_gateway_rest_api.my_api.id
-  parent_id   = aws_api_gateway_rest_api.my_api.root_resource_id
-  path_part   = "{proxy+}"
-}
-
-resource "aws_api_gateway_method" "proxy_method" {
-  rest_api_id   = aws_api_gateway_rest_api.my_api.id
-  resource_id   = aws_api_gateway_resource.proxy.id
-  http_method   = "ANY"
-  authorization = "NONE"
-}
-
-resource "aws_api_gateway_integration" "lambda_integration" {
-  rest_api_id             = aws_api_gateway_rest_api.my_api.id
-  resource_id             = aws_api_gateway_resource.proxy.id
-  http_method             = aws_api_gateway_method.proxy_method.http_method
-  integration_http_method = "POST"
-  type                    = "AWS_PROXY"
-  uri                     = aws_lambda_function.my_lambda_proxy.invoke_arn
-}
-
-resource "aws_lambda_permission" "api_gateway" {
-  statement_id  = "AllowAPIGatewayInvoke"
-  action        = "lambda:InvokeFunction"
-  function_name = aws_lambda_function.my_lambda_proxy.function_name
-  principal     = "apigateway.amazonaws.com"
-  source_arn    = "${aws_api_gateway_rest_api.my_api.execution_arn}/*/*"
-}
-###############################################
-
 
 resource "aws_api_gateway_deployment" "my_api_deployment" {
-  depends_on = [
-    aws_api_gateway_integration.hello_integration,
-    aws_api_gateway_integration.lambda_integration
-  ]
-
   rest_api_id = aws_api_gateway_rest_api.my_api.id
   stage_name  = "prod"
 }
-
-#############################
-# Outputs
-#############################
-
-output "api_gateway_url" {
-  description = "URL del API Gateway"
-  value       = aws_api_gateway_deployment.my_api_deployment.invoke_url
-}
-
-output "s3_bucket_name" {
-  description = "Nombre del bucket S3"
-  value       = aws_s3_bucket.my_bucket.bucket
-}
-
-output "dynamodb_table_name" {
-  description = "Nombre de la tabla DynamoDB"
-  value       = aws_dynamodb_table.my_table.name
-}
-
-output "lambda_hello_function_name" {
-  description = "Nombre de la función Lambda"
-  value       = aws_lambda_function.my_lambda_hello.function_name
-}
-
-output "lambda_proxy_function_name" {
-  description = "Nombre de la función Lambda"
-  value       = aws_lambda_function.my_lambda_proxy.function_name
-}
-
-
-
