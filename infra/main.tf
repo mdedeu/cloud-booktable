@@ -260,29 +260,18 @@ resource "aws_dynamodb_table" "restaurantes_table" {
     Environment = "Dev"
   }
 }
-#############################
-# Empaquetar el Código de Lambda
-#############################
-
-#Para codigo de lambda hello
-data "archive_file" "crear_mesa_zip" {
-  type        = "zip"
-  source_dir  = "${path.module}/../backend/crear-mesa"
-  output_path = "${path.module}/../backend/crear-mesa/crear_mesa.zip"
-}
 
 #############################
 # Lambda Functions
 #############################
 
-#En esta parte hago lambda para una ruta en especifico o para un proxy que basicamente te redirige cualquier endpoint que le metas a la funcion lambda (el proxy)
 #Lambda para Hello                                                                     
 resource "aws_lambda_function" "crear_mesa_lambda" {
   filename         = data.archive_file.crear_mesa_zip.output_path
   function_name    = "CrearMesaLambda"
   role             = var.lambda_execution_role_arn
-  handler          = "index.handler"  
-  runtime          = "nodejs20.x"    
+  handler          = "crear_mesa.crear_mesa"  
+  runtime          = "python3.12"    
   source_code_hash = data.archive_file.crear_mesa_zip.output_base64sha256
 
  vpc_config {
@@ -291,7 +280,7 @@ resource "aws_lambda_function" "crear_mesa_lambda" {
   }
 
   tags = {
-    Name        = "Mi Función Lambda Hello"
+    Name        = "Crear Mesa Lambda"
     Environment = "Dev"
   }
 }
