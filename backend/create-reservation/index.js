@@ -15,13 +15,25 @@ exports.handler = async (event, context) => {
         const res = await client.query("insert into reservations (table_id, name, email, date, time_slot, guests) values ($1, $2, $3, $4, $5, $6)", [event.table_id, event.name, event.email, event.date, event.time_slot, event.guests]);
         await client.end();
         return {
-            statusCode: 200
+            statusCode: 200,
+            headers: {
+                "Access-Control-Allow-Origin": "*", // Allow all origins
+                "Access-Control-Allow-Headers": "Content-Type",
+                "Access-Control-Allow-Methods": "OPTIONS,POST,GET"
+            },
         };
     } catch (error) {
         console.error('Connection error details:', error);
         return {
             statusCode: 500,
-            body: `Error connecting to the database: ${error.message}`,
+            body:{
+                error: error
+            },
+            headers: {
+                "Access-Control-Allow-Origin": "*", // Allow all origins
+                "Access-Control-Allow-Headers": "Content-Type",
+                "Access-Control-Allow-Methods": "OPTIONS,POST,GET"
+            },
         };
     }
     finally {

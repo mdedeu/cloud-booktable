@@ -11,7 +11,7 @@ class TableService {
         if (!response.ok) {
             throw new Error('Failed to fetch tables');
         }
-        return await response.json();
+        return await response;
     }
 
     async createTable(table) {
@@ -22,8 +22,7 @@ class TableService {
             },
             body: JSON.stringify(table)
         });
-        const jsonResponse = await response.json();
-        return JSON.parse(jsonResponse.body);
+        return await response.json();
     }
 
     async updateTable(id, table) {

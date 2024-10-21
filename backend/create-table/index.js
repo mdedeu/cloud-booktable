@@ -19,8 +19,8 @@ exports.handler = async (event, context) => {
             statusCode: 200,
             body: res.rows[0],
             headers:{
-                	'Access-Control-Allow-Origin': '*',
-			        'Access-Control-Allow-Methods': 'GET'
+                'Access-Control-Allow-Origin': '*',
+                'Access-Control-Allow-Methods': 'POST'
             }
         };
     } catch (error) {
