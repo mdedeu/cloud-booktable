@@ -84,9 +84,18 @@ resource "aws_s3_bucket_website_configuration" "frontend_bucket" {
   }
 }
 
-resource "aws_s3_bucket_policy" "frontend_bucket_policy" {
+resource "aws_s3_bucket_public_access_block" "frontend_bucket_public_access" {
   bucket = aws_s3_bucket.frontend_bucket.id
 
+  block_public_acls       = false
+  block_public_policy     = false
+  ignore_public_acls      = false
+  restrict_public_buckets = false
+}
+
+# Make sure the bucket policy depends on the public access block
+resource "aws_s3_bucket_policy" "frontend_bucket_policy" {
+  bucket = aws_s3_bucket.frontend_bucket.id
   policy = jsonencode({
     Version = "2012-10-17"
     Statement = [
@@ -99,6 +108,7 @@ resource "aws_s3_bucket_policy" "frontend_bucket_policy" {
       },
     ]
   })
+  depends_on = [aws_s3_bucket_public_access_block.frontend_bucket_public_access]
 }
 
 # Null resource for building and deploying frontend
@@ -142,17 +152,6 @@ resource "aws_dynamodb_table" "reservas_table" {
     type = "N"
   }
 
-  attribute {
-    name = "ID_Mesa"
-    type = "S"
-  }
-
-  global_secondary_index {
-    name               = "ID_MesaIndex"
-    hash_key           = "ID_Mesa"
-    projection_type    = "ALL"
-  }
-
   tags = {
     Name        = "Tabla Reservas"
     Environment = "Dev"
@@ -174,17 +173,6 @@ resource "aws_dynamodb_table" "mesas_table" {
   attribute {
     name = "Capacidad"
     type = "N"
-  }
-
-  attribute {
-    name = "ID_Mesa"
-    type = "S"
-  }
-
-  global_secondary_index {
-    name               = "ID_MesaIndex"
-    hash_key           = "ID_Mesa"
-    projection_type    = "ALL"
   }
 
   tags = {
@@ -210,17 +198,6 @@ resource "aws_dynamodb_table" "usuarios_table" {
     type = "N"
   }
 
-  attribute {
-    name = "ID_Reserva"
-    type = "S"
-  }
-
-  global_secondary_index {
-    name               = "ID_ReservaIndex"
-    hash_key           = "ID_Reserva"
-    projection_type    = "ALL"
-  }
-
   tags = {
     Name        = "Tabla Usuarios"
     Environment = "Dev"
@@ -242,17 +219,6 @@ resource "aws_dynamodb_table" "restaurantes_table" {
   attribute {
     name = "Categoria_Restaurant"
     type = "S"
-  }
-
-  attribute {
-    name = "ID_Usuario"
-    type = "S"
-  }
-
-  global_secondary_index {
-    name               = "ID_UsuarioIndex"
-    hash_key           = "ID_Usuario"
-    projection_type    = "ALL"
   }
 
   tags = {
@@ -289,10 +255,12 @@ resource "aws_lambda_function" "crear_mesa_lambda" {
 # API Gateway
 #############################
 
+
 resource "aws_api_gateway_rest_api" "my_api" {
   name        = "MiAPI"
   description = "API Gateway para mi aplicación"
 }
+
 
 #Definir un recurso específico, por ejemplo, "hello"
 resource "aws_api_gateway_resource" "hello" {
@@ -301,11 +269,12 @@ resource "aws_api_gateway_resource" "hello" {
   path_part   = "hello"
 }
 
+
 # Definir el método GET para el recurso "hello"
 resource "aws_api_gateway_method" "hello_method" {
   rest_api_id   = aws_api_gateway_rest_api.my_api.id
   resource_id   = aws_api_gateway_resource.hello.id
-  http_method   = "GET"
+  http_method   = "POST"
   authorization = "NONE"
 }
 
@@ -319,7 +288,20 @@ resource "aws_lambda_permission" "api_gateway_hello" {
 
 }
 
+resource "aws_api_gateway_integration" "lambda_integration" {
+  rest_api_id = aws_api_gateway_rest_api.my_api.id
+  resource_id = aws_api_gateway_resource.hello.id
+  http_method = aws_api_gateway_method.hello_method.http_method
+
+  integration_http_method = "POST"
+  type                    = "AWS_PROXY"
+  uri                     = aws_lambda_function.crear_mesa_lambda.invoke_arn
+}
+
+# Make sure the deployment depends on the integration
 resource "aws_api_gateway_deployment" "my_api_deployment" {
+  depends_on = [aws_api_gateway_integration.lambda_integration]
+
   rest_api_id = aws_api_gateway_rest_api.my_api.id
   stage_name  = "prod"
 }
