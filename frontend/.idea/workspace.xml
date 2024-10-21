@@ -6,22 +6,7 @@
   <component name="ChangeListManager">
     <list default="true" id="8eda5742-6782-436c-8f3e-1972753a0452" name="Changes" comment="fix: last version">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/app/book/page.tsx" beforeDir="false" />
       <change beforePath="$PROJECT_DIR$/src/app/page.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/src/app/page.tsx" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/app/restaurant-dashboard/page.tsx" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/components/ui/badge.tsx" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/components/ui/button.tsx" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/components/ui/calendar.tsx" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/components/ui/card.tsx" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/components/ui/input.tsx" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/components/ui/label.tsx" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/components/ui/popover.tsx" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/components/ui/select.tsx" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/components/ui/table.tsx" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/components/ui/tabs.tsx" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/lib/reservation_service.ts" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/lib/table_service.ts" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/lib/types.ts" beforeDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -97,7 +82,7 @@
       <workItem from="1727280801439" duration="3872000" />
       <workItem from="1727285753781" duration="3162000" />
       <workItem from="1727289568422" duration="951000" />
-      <workItem from="1729519330482" duration="639000" />
+      <workItem from="1729519330482" duration="1263000" />
     </task>
     <task id="LOCAL-00001" summary="fix: integrating with backend">
       <option name="closed" value="true" />

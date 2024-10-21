@@ -1,7 +1,8 @@
-import React, { useState } from 'react';
+'use client';
+import React, {useEffect, useState} from 'react';
 
 export default function Home() {
-  const backend_url = process.env.NEXT_PUBLIC_BACKEND_URL;
+  const [backendUrl, setBackendUrl] = useState('http://localhost:3000');
   const [reservaData, setReservaData] = useState({
     restaurant_name: '',
     date: '',
@@ -23,6 +24,12 @@ export default function Home() {
   const [reservaId, setReservaId] = useState('');
   const [result, setResult] = useState('');
 
+  useEffect(() => {
+    if (process.env.NEXT_PUBLIC_BACKEND_URL) {
+      setBackendUrl(process.env.NEXT_PUBLIC_BACKEND_URL);
+    }
+  }, []);
+
   const timeOptions = [
     '13:00', '14:00', '15:00', '19:00', '20:00', '21:00', '22:00', '23:00'
   ];
@@ -38,7 +45,7 @@ export default function Home() {
         datetime: timestamp.toString()
       };
 
-      const response = await fetch(`${backend_url}/reservas`, {
+      const response = await fetch(`${backendUrl}/reservas`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(reservaPayload)
@@ -52,7 +59,7 @@ export default function Home() {
 
   const handleGetReservas = async () => {
     try {
-      const response = await fetch(`${backend_url}/reservas`);
+      const response = await fetch(`${backendUrl}/reservas`);
       const data = await response.json();
       setResult(JSON.stringify(data));
     } catch (error) {
@@ -62,7 +69,7 @@ export default function Home() {
 
   const handleDeleteReserva = async () => {
     try {
-      const response = await fetch(`${backend_url}/reservas/${reservaId}`, { method: 'DELETE' });
+      const response = await fetch(`${backendUrl}/reservas/${reservaId}`, { method: 'DELETE' });
       const data = await response.json();
       setResult(JSON.stringify(data));
     } catch (error) {
@@ -73,7 +80,7 @@ export default function Home() {
   const handleCreateRestaurant = async (e) => {
     e.preventDefault();
     try {
-      const response = await fetch(`${backend_url}/admin/restaurant`, {
+      const response = await fetch(`${backendUrl}/admin/restaurant`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(restaurantData)
@@ -88,7 +95,7 @@ export default function Home() {
   const handleCreateMesa = async (e) => {
     e.preventDefault();
     try {
-      const response = await fetch(`${backend_url}/admin/mesas`, {
+      const response = await fetch(`${backendUrl}/admin/mesas`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(mesaData)
@@ -102,7 +109,7 @@ export default function Home() {
 
   const handleGetAdminReservas = async () => {
     try {
-      const response = await fetch(`${backend_url}/admin/reservas`);
+      const response = await fetch(`${backendUrl}/admin/reservas`);
       const data = await response.json();
       setResult(JSON.stringify(data));
     } catch (error) {
@@ -122,18 +129,18 @@ export default function Home() {
                 placeholder="Restaurant Name"
                 value={reservaData.restaurant_name}
                 onChange={(e) => setReservaData({...reservaData, restaurant_name: e.target.value})}
-                className="w-full p-2 border rounded"
+                className="w-full p-2 border rounded text-black"
             />
             <input
                 type="date"
                 value={reservaData.date}
                 onChange={(e) => setReservaData({...reservaData, date: e.target.value})}
-                className="w-full p-2 border rounded"
+                className="w-full p-2 border rounded text-black"
             />
             <select
                 value={reservaData.time}
                 onChange={(e) => setReservaData({...reservaData, time: e.target.value})}
-                className="w-full p-2 border rounded"
+                className="w-full p-2 border rounded text-black"
             >
               <option value="">Select Time</option>
               {timeOptions.map(time => (
@@ -145,21 +152,21 @@ export default function Home() {
                 placeholder="Comensales"
                 value={reservaData.comensales}
                 onChange={(e) => setReservaData({...reservaData, comensales: e.target.value})}
-                className="w-full p-2 border rounded"
+                className="w-full p-2 border rounded text-black"
             />
             <input
                 type="text"
                 placeholder="Name"
                 value={reservaData.name}
                 onChange={(e) => setReservaData({...reservaData, name: e.target.value})}
-                className="w-full p-2 border rounded"
+                className="w-full p-2 border rounded text-black"
             />
             <input
                 type="email"
                 placeholder="Email"
                 value={reservaData.email}
                 onChange={(e) => setReservaData({...reservaData, email: e.target.value})}
-                className="w-full p-2 border rounded"
+                className="w-full p-2 border rounded text-black"
             />
             <button type="submit" className="w-full p-2 bg-blue-500 text-white rounded">Create Reserva</button>
           </form>
@@ -177,7 +184,7 @@ export default function Home() {
               placeholder="Reserva ID"
               value={reservaId}
               onChange={(e) => setReservaId(e.target.value)}
-              className="w-full p-2 border rounded mb-2"
+              className="w-full p-2 border rounded text-black mb-2"
           />
           <button onClick={handleDeleteReserva} className="w-full p-2 bg-red-500 text-white rounded">Delete Reserva</button>
         </div>
@@ -190,28 +197,28 @@ export default function Home() {
                 placeholder="Localidad"
                 value={restaurantData.localidad}
                 onChange={(e) => setRestaurantData({...restaurantData, localidad: e.target.value})}
-                className="w-full p-2 border rounded"
+                className="w-full p-2 border rounded text-black"
             />
             <input
                 type="text"
                 placeholder="Categoria"
                 value={restaurantData.categoria}
                 onChange={(e) => setRestaurantData({...restaurantData, categoria: e.target.value})}
-                className="w-full p-2 border rounded"
+                className="w-full p-2 border rounded text-black"
             />
             <input
                 type="text"
                 placeholder="Nombre Restaurant"
                 value={restaurantData.nombre_restaurant}
                 onChange={(e) => setRestaurantData({...restaurantData, nombre_restaurant: e.target.value})}
-                className="w-full p-2 border rounded"
+                className="w-full p-2 border rounded text-black"
             />
             <input
                 type="text"
                 placeholder="ID Usuario"
                 value={restaurantData.id_usuario}
                 onChange={(e) => setRestaurantData({...restaurantData, id_usuario: e.target.value})}
-                className="w-full p-2 border rounded"
+                className="w-full p-2 border rounded text-black"
             />
             <button type="submit" className="w-full p-2 bg-purple-500 text-white rounded">Create Restaurant</button>
           </form>
@@ -225,14 +232,14 @@ export default function Home() {
                 placeholder="Restaurant Name"
                 value={mesaData.restaurant_name}
                 onChange={(e) => setMesaData({...mesaData, restaurant_name: e.target.value})}
-                className="w-full p-2 border rounded"
+                className="w-full p-2 border rounded text-black"
             />
             <input
                 type="number"
                 placeholder="Capacidad"
                 value={mesaData.capacidad}
                 onChange={(e) => setMesaData({...mesaData, capacidad: e.target.value})}
-                className="w-full p-2 border rounded"
+                className="w-full p-2 border rounded text-black"
             />
             <button type="submit" className="w-full p-2 bg-yellow-500 text-white rounded">Create Mesa</button>
           </form>
@@ -245,7 +252,7 @@ export default function Home() {
 
         <div className="mt-8">
           <h2 className="text-xl font-semibold mb-2">Result</h2>
-          <pre className="bg-gray-100 p-4 rounded overflow-x-auto">{result}</pre>
+          <pre className="bg-gray-100 p-4 rounded overflow-x-auto text-black">{result}</pre>
         </div>
       </div>
   );
