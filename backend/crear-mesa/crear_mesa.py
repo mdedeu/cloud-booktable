@@ -14,9 +14,12 @@ def crear_mesa(event, context):
         return {
             'statusCode': 400,
             'body': json.dumps("Error: restaurant_name y capacidad son requeridos."),
-            'headers': {
-                'Access-Control-Allow-Origin': '*'
-            }
+             'headers': {
+        'Access-Control-Allow-Origin': '*',
+        'Access-Control-Allow-Headers': 'Content-Type,X-Amz-Date,Authorization,X-Api-Key,X-Amz-Security-Token',
+        'Access-Control-Allow-Methods': 'OPTIONS,POST'
+    }
+
         }
 
     # Inicialización de la tabla
@@ -39,15 +42,20 @@ def crear_mesa(event, context):
         return {
             'statusCode': 500,
             'body': json.dumps(f"Error agregando la mesa: {str(e)}"),
-            'headers': {
-                'Access-Control-Allow-Origin': '*'
-            }
+             'headers': {
+        'Access-Control-Allow-Origin': '*',
+        'Access-Control-Allow-Headers': 'Content-Type,X-Amz-Date,Authorization,X-Api-Key,X-Amz-Security-Token',
+        'Access-Control-Allow-Methods': 'OPTIONS,POST'
+    }
+
         }
 
     return {
         'statusCode': 201,
         'body': json.dumps("Mesa agregada exitosamente."),
         'headers': {
-            'Access-Control-Allow-Origin': '*'
+            'Access-Control-Allow-Origin': '*',
+            'Access-Control-Allow-Methods': '*',
+            'Access-Control-Allow-Headers': '*'
         }
     }

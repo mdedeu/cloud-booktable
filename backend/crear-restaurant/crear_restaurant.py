@@ -25,10 +25,21 @@ def crear_restaurant(event, context):
     except Exception as e:
         return {
             'statusCode': 500,
-            'body': json.dumps(f"Error creando el restaurante: {str(e)}")
+            'body': json.dumps(f"Error creando el restaurante: {str(e)}"),
+             'headers': {
+        'Access-Control-Allow-Origin': '*',
+        'Access-Control-Allow-Headers': 'Content-Type,X-Amz-Date,Authorization,X-Api-Key,X-Amz-Security-Token',
+        'Access-Control-Allow-Methods': 'OPTIONS,POST'
+    }
+
         }
     
     return {
         'statusCode': 201,
-        'body': json.dumps("Restaurante creado exitosamente.")
+        'body': json.dumps("Restaurante creado exitosamente."),
+        'headers': {
+            'Access-Control-Allow-Origin': '*',
+            'Access-Control-Allow-Methods': '*',
+            'Access-Control-Allow-Headers': '*'
+        }
     }

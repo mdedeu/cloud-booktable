@@ -35,7 +35,7 @@ resource "aws_security_group" "lambda_sg" {
   egress {
     from_port   = 0
     to_port     = 443
-    protocol    = "https"
+    protocol    = "tcp"
     cidr_blocks = ["0.0.0.0/0"]
   }
 
@@ -226,12 +226,8 @@ resource "aws_dynamodb_table" "restaurantes_table" {
     Environment = "Dev"
   }
 }
-
-#############################
-# Lambda Functions
-#############################
-
-#Lambda para Hello                                                                     
+##########LAMBDAS 
+#Lambda para Crear Mesa                                                                    
 resource "aws_lambda_function" "crear_mesa_lambda" {
   filename         = data.archive_file.crear_mesa_zip.output_path
   function_name    = "CrearMesaLambda"
@@ -251,6 +247,46 @@ resource "aws_lambda_function" "crear_mesa_lambda" {
   }
 }
 
+#Lambda para Crear Reserva                                                                   
+resource "aws_lambda_function" "crear_reserva_lambda" {
+  filename         = data.archive_file.crear_reserva_zip.output_path
+  function_name    = "CrearReservaLambda"
+  role             = var.lambda_execution_role_arn
+  handler          = "crear_reserva.crear_reserva"
+  runtime          = "python3.12"    
+  source_code_hash = data.archive_file.crear_reserva_zip.output_base64sha256
+
+ vpc_config {
+    subnet_ids         = module.vpc.private_subnets
+    security_group_ids = [aws_security_group.lambda_sg.id]
+  }
+
+  tags = {
+    Name        = "Crear Reserva Lambda"
+    Environment = "Dev"
+  }
+}
+
+#Lambda para Crear Restaurante                                                                 
+resource "aws_lambda_function" "crear_restaurant_lambda" {
+  filename         = data.archive_file.crear_restaurant_zip.output_path
+  function_name    = "CrearRestaurantLambda"
+  role             = var.lambda_execution_role_arn
+  handler          = "crear_restaurant.crear_restaurant"  
+  runtime          = "python3.12"    
+  source_code_hash = data.archive_file.crear_restaurant_zip.output_base64sha256
+
+ vpc_config {
+    subnet_ids         = module.vpc.private_subnets
+    security_group_ids = [aws_security_group.lambda_sg.id]
+  }
+
+  tags = {
+    Name        = "Crear Restaurant Lambda"
+    Environment = "Dev"
+  }
+}
+
 #############################
 # API Gateway
 #############################
@@ -262,46 +298,185 @@ resource "aws_api_gateway_rest_api" "my_api" {
 }
 
 
-#Definir un recurso específico, por ejemplo, "hello"
-resource "aws_api_gateway_resource" "hello" {
+# Recurso API Gateway para "/reservas"
+resource "aws_api_gateway_resource" "reservas" {
   rest_api_id = aws_api_gateway_rest_api.my_api.id
   parent_id   = aws_api_gateway_rest_api.my_api.root_resource_id
-  path_part   = "hello"
+  path_part   = "reservas"
+}
+
+# Recurso API Gateway para "/admin"
+resource "aws_api_gateway_resource" "admin" {
+  rest_api_id = aws_api_gateway_rest_api.my_api.id
+  parent_id   = aws_api_gateway_rest_api.my_api.root_resource_id
+  path_part   = "admin"
+}
+
+# Recurso API Gateway para "/admin/restaurant"
+resource "aws_api_gateway_resource" "admin_restaurant" {
+  rest_api_id = aws_api_gateway_rest_api.my_api.id
+  parent_id   = aws_api_gateway_resource.admin.id
+  path_part   = "restaurant"
+}
+
+# Recurso API Gateway para "/admin/mesas"
+resource "aws_api_gateway_resource" "admin_mesas" {
+  rest_api_id = aws_api_gateway_rest_api.my_api.id
+  parent_id   = aws_api_gateway_resource.admin.id
+  path_part   = "mesas"
 }
 
 
-# Definir el método GET para el recurso "hello"
-resource "aws_api_gateway_method" "hello_method" {
+####Métodos####
+
+
+# Metodo POST para "/admin/restaurant"
+resource "aws_api_gateway_method" "post_admin_restaurant" {
   rest_api_id   = aws_api_gateway_rest_api.my_api.id
-  resource_id   = aws_api_gateway_resource.hello.id
+  resource_id   = aws_api_gateway_resource.admin_restaurant.id
   http_method   = "POST"
   authorization = "NONE"
 }
 
-# Permisos para que API Gateway invoque Lambda
-resource "aws_lambda_permission" "api_gateway_hello" {
-  statement_id  = "AllowAPIGatewayInvokeHello"
-  action        = "lambda:InvokeFunction"
-  function_name = aws_lambda_function.crear_mesa_lambda.function_name
-  principal     = "apigateway.amazonaws.com"
-  source_arn = "${aws_api_gateway_rest_api.my_api.execution_arn}/prod/GET/hello"
-
+# Metodo POST para "/admin/mesas"
+resource "aws_api_gateway_method" "post_admin_mesas" {
+  rest_api_id   = aws_api_gateway_rest_api.my_api.id
+  resource_id   = aws_api_gateway_resource.admin_mesas.id
+  http_method   = "POST"
+  authorization = "NONE"
 }
 
-resource "aws_api_gateway_integration" "lambda_integration" {
-  rest_api_id = aws_api_gateway_rest_api.my_api.id
-  resource_id = aws_api_gateway_resource.hello.id
-  http_method = aws_api_gateway_method.hello_method.http_method
+# Metodo POST para "/reservas"
+resource "aws_api_gateway_method" "cors_method" {
+  rest_api_id   = aws_api_gateway_rest_api.my_api.id
+  resource_id   = aws_api_gateway_resource.reservas.id
+  http_method   = "POST"
+  authorization = "NONE"
+}
 
+resource "aws_api_gateway_method_response" "cors_method_response_200" {
+    rest_api_id   = "${aws_api_gateway_rest_api.my_api.id}"
+    resource_id   = "${aws_api_gateway_resource.reservas.id}"
+    http_method   = "${aws_api_gateway_method.cors_method.http_method}"
+    status_code   = "200"
+    response_parameters = {
+        "method.response.header.Access-Control-Allow-Origin" = true
+    }
+    depends_on = [aws_api_gateway_method.cors_method]
+}
+
+# Integración Lambda para "/reservas"
+resource "aws_api_gateway_integration" "lambda_integration_reservas" {
+  rest_api_id             = aws_api_gateway_rest_api.my_api.id
+  resource_id             = aws_api_gateway_resource.reservas.id
+  http_method             = aws_api_gateway_method.cors_method.http_method
+  integration_http_method = "POST"
+  type                    = "AWS_PROXY"
+  uri                     = aws_lambda_function.crear_reserva_lambda.invoke_arn
+  depends_on    = [aws_api_gateway_method.cors_method, aws_lambda_function.crear_reserva_lambda]
+}
+
+# Permiso para que API Gateway invoque Lambda de reservas
+resource "aws_lambda_permission" "api_gateway_reservas" {
+  statement_id  = "AllowAPIGatewayInvokeReservas"
+  action        = "lambda:InvokeFunction"
+  function_name = aws_lambda_function.crear_reserva_lambda.function_name
+  principal     = "apigateway.amazonaws.com"
+  source_arn    = "${aws_api_gateway_rest_api.my_api.execution_arn}/prod/POST/reservas"
+}
+
+###########CORS############
+
+#OPTIONS CORS
+resource "aws_api_gateway_method" "options_method" {
+    rest_api_id   = "${aws_api_gateway_rest_api.my_api.id}"
+    resource_id   = "${aws_api_gateway_resource.reservas.id}"
+    http_method   = "OPTIONS"
+    authorization = "NONE"
+}
+
+resource "aws_api_gateway_method_response" "options_200" {
+    rest_api_id   = "${aws_api_gateway_rest_api.my_api.id}"
+    resource_id   = "${aws_api_gateway_resource.reservas.id}"
+    http_method   = "${aws_api_gateway_method.options_method.http_method}"
+    status_code   = "200"
+    response_parameters = {
+      "method.response.header.Access-Control-Allow-Headers" = true,
+      "method.response.header.Access-Control-Allow-Methods" = true,
+      "method.response.header.Access-Control-Allow-Origin" = true
+    }
+    depends_on = [aws_api_gateway_method.options_method]
+}
+
+resource "aws_api_gateway_integration" "options_integration" {
+    rest_api_id   = "${aws_api_gateway_rest_api.my_api.id}"
+    resource_id   = "${aws_api_gateway_resource.reservas.id}"
+    http_method   = "${aws_api_gateway_method.options_method.http_method}"
+    type          = "MOCK"
+    depends_on = [aws_api_gateway_method.options_method]
+}
+
+resource "aws_api_gateway_integration_response" "options_integration_response" {
+    rest_api_id   = "${aws_api_gateway_rest_api.my_api.id}"
+    resource_id   = "${aws_api_gateway_resource.reservas.id}"
+    http_method   = "${aws_api_gateway_method.options_method.http_method}"
+    status_code   = "${aws_api_gateway_method_response.options_200.status_code}"
+    response_parameters = {
+        "method.response.header.Access-Control-Allow-Headers" = "'Content-Type,X-Amz-Date,Authorization,X-Api-Key,X-Amz-Security-Token'",
+        "method.response.header.Access-Control-Allow-Methods" = "'GET,OPTIONS,POST,PUT'",
+        "method.response.header.Access-Control-Allow-Origin" = "'*'"
+    }
+    depends_on = [aws_api_gateway_method_response.options_200]
+}
+
+############
+
+# Integración Lambda para "/admin/restaurant"
+resource "aws_api_gateway_integration" "lambda_integration_admin_restaurant" {
+  rest_api_id             = aws_api_gateway_rest_api.my_api.id
+  resource_id             = aws_api_gateway_resource.admin_restaurant.id
+  http_method             = aws_api_gateway_method.post_admin_restaurant.http_method
+  integration_http_method = "POST"
+  type                    = "AWS_PROXY"
+  uri                     = aws_lambda_function.crear_restaurant_lambda.invoke_arn
+}
+
+# Permiso para que API Gateway invoque Lambda de restaurant
+resource "aws_lambda_permission" "api_gateway_restaurant" {
+  statement_id  = "AllowAPIGatewayInvokeRestaurant"
+  action        = "lambda:InvokeFunction"
+  function_name = aws_lambda_function.crear_restaurant_lambda.function_name
+  principal     = "apigateway.amazonaws.com"
+  source_arn    = "${aws_api_gateway_rest_api.my_api.execution_arn}/prod/POST/admin/restaurant"
+}
+
+# Integración Lambda para "/admin/mesas"
+resource "aws_api_gateway_integration" "lambda_integration_admin_mesas" {
+  rest_api_id             = aws_api_gateway_rest_api.my_api.id
+  resource_id             = aws_api_gateway_resource.admin_mesas.id
+  http_method             = aws_api_gateway_method.post_admin_mesas.http_method
   integration_http_method = "POST"
   type                    = "AWS_PROXY"
   uri                     = aws_lambda_function.crear_mesa_lambda.invoke_arn
 }
 
-# Make sure the deployment depends on the integration
-resource "aws_api_gateway_deployment" "my_api_deployment" {
-  depends_on = [aws_api_gateway_integration.lambda_integration]
+# Permiso para que API Gateway invoque la Lambda de mesas
+resource "aws_lambda_permission" "api_gateway_mesas" {
+  statement_id  = "AllowAPIGatewayInvokeMesas"
+  action        = "lambda:InvokeFunction"
+  function_name = aws_lambda_function.crear_mesa_lambda.function_name
+  principal     = "apigateway.amazonaws.com"
+  source_arn    = "${aws_api_gateway_rest_api.my_api.execution_arn}/prod/POST/admin/mesas"
+}
 
+
+# Se asegura que el deployment de las lambda dependa primero de las integraciones con el Api Gateway
+resource "aws_api_gateway_deployment" "my_api_deployment" {
+  depends_on = [
+    aws_api_gateway_integration.lambda_integration_reservas,
+    aws_api_gateway_integration.lambda_integration_admin_restaurant,
+    aws_api_gateway_integration.lambda_integration_admin_mesas,
+  ]
   rest_api_id = aws_api_gateway_rest_api.my_api.id
   stage_name  = "prod"
 }

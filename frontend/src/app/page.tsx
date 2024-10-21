@@ -5,6 +5,7 @@ export default function Home() {
   const [backendUrl, setBackendUrl] = useState('http://localhost:3000');
   const [reservaData, setReservaData] = useState({
     restaurant_name: '',
+    localidad: '',
     date: '',
     time: '',
     comensales: '',
@@ -12,6 +13,7 @@ export default function Home() {
     email: ''
   });
   const [mesaData, setMesaData] = useState({
+    localidad:'',
     restaurant_name: '',
     capacidad: ''
   });
@@ -126,6 +128,13 @@ export default function Home() {
           <form onSubmit={handleReservaSubmit} className="space-y-2">
             <input
                 type="text"
+                placeholder="Location"
+                value={reservaData.restaurant_name}
+                onChange={(e) => setReservaData({...reservaData, localidad: e.target.value})}
+                className="w-full p-2 border rounded text-black"
+            />
+            <input
+                type="text"
                 placeholder="Restaurant Name"
                 value={reservaData.restaurant_name}
                 onChange={(e) => setReservaData({...reservaData, restaurant_name: e.target.value})}
@@ -174,7 +183,8 @@ export default function Home() {
 
         <div className="mb-8">
           <h2 className="text-xl font-semibold mb-2">Get Reservas</h2>
-          <button onClick={handleGetReservas} className="w-full p-2 bg-green-500 text-white rounded">Get Reservas</button>
+          <button onClick={handleGetReservas} className="w-full p-2 bg-green-500 text-white rounded">Get Reservas
+          </button>
         </div>
 
         <div className="mb-8">
@@ -229,6 +239,13 @@ export default function Home() {
           <form onSubmit={handleCreateMesa} className="space-y-2">
             <input
                 type="text"
+                placeholder="Location"
+                value={reservaData.restaurant_name}
+                onChange={(e) => setReservaData({...reservaData, localidad: e.target.value})}
+                className="w-full p-2 border rounded text-black"
+            />
+            <input
+                type="text"
                 placeholder="Restaurant Name"
                 value={mesaData.restaurant_name}
                 onChange={(e) => setMesaData({...mesaData, restaurant_name: e.target.value})}
@@ -247,7 +264,9 @@ export default function Home() {
 
         <div className="mb-8">
           <h2 className="text-xl font-semibold mb-2">Get Admin Reservas</h2>
-          <button onClick={handleGetAdminReservas} className="w-full p-2 bg-indigo-500 text-white rounded">Get Admin Reservas</button>
+          <button onClick={handleGetAdminReservas} className="w-full p-2 bg-indigo-500 text-white rounded">Get Admin
+            Reservas
+          </button>
         </div>
 
         <div className="mt-8">
