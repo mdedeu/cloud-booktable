@@ -1,71 +1,35 @@
 #############################
 # VPC y Subnets (ya existente)
 #############################
+module "vpc" {
+  source = "terraform-aws-modules/vpc/aws"
 
-resource "aws_vpc" "vpc1" {
-  cidr_block = "10.0.0.0/16"
+  name = "my-vpc"
+  cidr = "10.0.0.0/16"
+
+  azs             = ["us-east-1a", "us-east-1b"]
+  private_subnets = ["10.0.1.0/24", "10.0.2.0/24"]
+
+  enable_nat_gateway = false
+  enable_vpn_gateway = false
+
   tags = {
-    Name = "VPC1"
+    Terraform = "true"
+    Environment = "dev"
   }
 }
 
-resource "aws_subnet" "sn1" {
-  vpc_id            = aws_vpc.vpc1.id
-  cidr_block        = "10.0.1.0/24"
-  availability_zone = "us-east-1a"
-
-  tags = {
-    Name = "Subnet_priv1"
-  }
-}
-
-resource "aws_subnet" "sn2" {
-  vpc_id            = aws_vpc.vpc1.id
-  cidr_block        = "10.0.2.0/24"
-  availability_zone = "us-east-1b"
-
-  tags = {
-    Name = "Subnet_priv2"
-  }
-}
-
-#############################
-# Route Tables Privadas
-#############################
-
-resource "aws_route_table" "private_rt" {
-  vpc_id = aws_vpc.vpc1.id
-
-  tags = {
-    Name = "Private Route Table"
-  }
-}
-
-# Asocia la tabla de rutas privada a las subnets privadas
-resource "aws_route_table_association" "private_a" {
-  subnet_id      = aws_subnet.sn1.id
-  route_table_id = aws_route_table.private_rt.id
-}
-
-resource "aws_route_table_association" "private_b" {
-  subnet_id      = aws_subnet.sn2.id
-  route_table_id = aws_route_table.private_rt.id
-}
-
-#############################
 # Security Groups
-#############################
-
 resource "aws_security_group" "lambda_sg" {
   name        = "lambda_sg"
   description = "Security group for Lambda functions"
-  vpc_id      = aws_vpc.vpc1.id
+  vpc_id      = module.vpc.vpc_id
 
   ingress {
     from_port   = 0
     to_port     = 0
     protocol    = "-1"
-    cidr_blocks = ["10.0.0.0/16"]
+    cidr_blocks = [module.vpc.vpc_cidr_block]
   }
 
   egress {
@@ -80,35 +44,31 @@ resource "aws_security_group" "lambda_sg" {
   }
 }
 
-#############################
 # VPC Endpoints
-#############################
-
-# VPC Endpoint para S3
 resource "aws_vpc_endpoint" "s3" {
-  vpc_id            = aws_vpc.vpc1.id
+  vpc_id            = module.vpc.vpc_id
   service_name      = "com.amazonaws.us-east-1.s3"
   vpc_endpoint_type = "Gateway"
 
-  route_table_ids = [aws_route_table.private_rt.id]
+  route_table_ids = module.vpc.private_route_table_ids
 
   tags = {
     Name = "S3 VPC Endpoint"
   }
 }
 
-# VPC Endpoint para DynamoDB
 resource "aws_vpc_endpoint" "dynamodb" {
-  vpc_id            = aws_vpc.vpc1.id
+  vpc_id            = module.vpc.vpc_id
   service_name      = "com.amazonaws.us-east-1.dynamodb"
   vpc_endpoint_type = "Gateway"
 
-  route_table_ids = [aws_route_table.private_rt.id]
+  route_table_ids = module.vpc.private_route_table_ids
 
   tags = {
     Name = "DynamoDB VPC Endpoint"
   }
 }
+
 
 #############################
 # S3 Bucket
@@ -264,8 +224,8 @@ resource "aws_lambda_function" "crear_mesa_lambda" {
   runtime          = "nodejs20.x"    
   source_code_hash = data.archive_file.crear_mesa_zip.output_base64sha256
 
-  vpc_config {
-    subnet_ids         = [aws_subnet.sn1.id, aws_subnet.sn2.id]
+ vpc_config {
+    subnet_ids         = module.vpc.private_subnets
     security_group_ids = [aws_security_group.lambda_sg.id]
   }
 
