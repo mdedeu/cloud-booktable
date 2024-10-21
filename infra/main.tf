@@ -7,7 +7,7 @@ module "vpc" {
   name = "my-vpc"
   cidr = "10.0.0.0/16"
 
-  azs             = ["us-east-1a", "us-east-1b"]
+  azs             = ["us-east-1a", "us-east-1b"] //se pueden buscar 2 disponibles, con datasources
   private_subnets = ["10.0.1.0/24", "10.0.2.0/24"]
 
   enable_nat_gateway = false
@@ -34,8 +34,8 @@ resource "aws_security_group" "lambda_sg" {
 
   egress {
     from_port   = 0
-    to_port     = 0
-    protocol    = "-1"
+    to_port     = 443
+    protocol    = "https"
     cidr_blocks = ["0.0.0.0/0"]
   }
 
