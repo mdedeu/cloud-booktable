@@ -4,17 +4,20 @@ import React, {useEffect, useState} from 'react';
 export default function Home() {
   const [backendUrl, setBackendUrl] = useState('http://localhost:3000');
   const [reservaData, setReservaData] = useState({
-    restaurant_name: '',
+    nombre_restaurant: '',
     localidad: '',
+    categoria: '',
     date: '',
     time: '',
     comensales: '',
-    name: '',
-    email: ''
+    user_name: '',
+    user_id: '',
+    email:''
   });
   const [mesaData, setMesaData] = useState({
+    categoria: '',
     localidad:'',
-    restaurant_name: '',
+    nombre_restaurant: '',
     capacidad: ''
   });
   const [restaurantData, setRestaurantData] = useState({
@@ -23,7 +26,12 @@ export default function Home() {
     nombre_restaurant: '',
     id_usuario: ''
   });
-  const [reservaId, setReservaId] = useState('');
+  let [deleteReservaData, setDeleteReservaData] = useState({
+    user_id: '',
+    date: '',
+    time: ''
+  });
+
   const [result, setResult] = useState('');
 
   useEffect(() => {
@@ -43,7 +51,13 @@ export default function Home() {
       const timestamp = Math.floor(dateTime.getTime() / 1000);
 
       const reservaPayload = {
-        ...reservaData,
+        nombre_restaurant: reservaData.nombre_restaurant,
+        localidad: reservaData.localidad,
+        categoria: reservaData.categoria,
+        comensales: reservaData.comensales,
+        user_name: reservaData.user_name,
+        user_id: reservaData.user_id,
+        email: reservaData.email,
         datetime: timestamp.toString()
       };
 
@@ -71,13 +85,28 @@ export default function Home() {
 
   const handleDeleteReserva = async () => {
     try {
-      const response = await fetch(`${backendUrl}/reservas/${reservaId}`, { method: 'DELETE' });
+      const dateTimeString = `${deleteReservaData.date}T${deleteReservaData.time}:00`;
+      const dateTime = new Date(dateTimeString);
+      const timestamp = Math.floor(dateTime.getTime() / 1000);
+
+      const body = {
+        user_id: deleteReservaData.user_id,
+        datetime: timestamp.toString()
+      };
+
+      const response = await fetch(`${backendUrl}/reservas`, {
+        method: 'DELETE',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(body)
+      });
+
       const data = await response.json();
       setResult(JSON.stringify(data));
     } catch (error) {
       setResult('Error: ' + error.message);
     }
   };
+
 
   const handleCreateRestaurant = async (e) => {
     e.preventDefault();
@@ -170,9 +199,16 @@ export default function Home() {
             />
             <input
                 type="text"
+                placeholder="Categoría"
+                value={mesaData.categoria}
+                onChange={(e) => setMesaData({...mesaData, categoria: e.target.value})}
+                className="w-full p-2 border rounded text-black"
+            />
+            <input
+                type="text"
                 placeholder="Restaurant Name"
-                value={mesaData.restaurant_name}
-                onChange={(e) => setMesaData({...mesaData, restaurant_name: e.target.value})}
+                value={mesaData.nombre_restaurant}
+                onChange={(e) => setMesaData({...mesaData, nombre_restaurant: e.target.value})}
                 className="w-full p-2 border rounded text-black"
             />
             <input
@@ -209,9 +245,16 @@ export default function Home() {
             />
             <input
                 type="text"
+                placeholder="Categoría"
+                value={reservaData.categoria}
+                onChange={(e) => setReservaData({...reservaData, categoria: e.target.value})}
+                className="w-full p-2 border rounded text-black"
+            />
+            <input
+                type="text"
                 placeholder="Restaurant Name"
-                value={reservaData.restaurant_name}
-                onChange={(e) => setReservaData({...reservaData, restaurant_name: e.target.value})}
+                value={reservaData.nombre_restaurant}
+                onChange={(e) => setReservaData({...reservaData, nombre_restaurant: e.target.value})}
                 className="w-full p-2 border rounded text-black"
             />
             <input
@@ -240,8 +283,15 @@ export default function Home() {
             <input
                 type="text"
                 placeholder="Name"
-                value={reservaData.name}
-                onChange={(e) => setReservaData({...reservaData, name: e.target.value})}
+                value={reservaData.user_name}
+                onChange={(e) => setReservaData({...reservaData, user_name: e.target.value})}
+                className="w-full p-2 border rounded text-black"
+            />
+            <input
+                type="text"
+                placeholder="User ID"
+                value={reservaData.user_id}
+                onChange={(e) => setReservaData({...reservaData, user_id: e.target.value})}
                 className="w-full p-2 border rounded text-black"
             />
             <input
@@ -265,11 +315,27 @@ export default function Home() {
           <h2 className="text-xl font-semibold mb-2">Delete Reserva</h2>
           <input
               type="text"
-              placeholder="Reserva ID"
-              value={reservaId}
-              onChange={(e) => setReservaId(e.target.value)}
+              placeholder="User ID"
+              value={deleteReservaData.user_id}
+              onChange={(e) => setDeleteReservaData({...deleteReservaData, user_id: e.target.value})}
               className="w-full p-2 border rounded text-black mb-2"
           />
+          <input
+              type="date"
+              value={deleteReservaData.date}
+              onChange={(e) => setDeleteReservaData({...deleteReservaData, date: e.target.value})}
+              className="w-full p-2 border rounded text-black mb-2"
+          />
+          <select
+              value={deleteReservaData.time}
+              onChange={(e) => setDeleteReservaData({...deleteReservaData, time: e.target.value})}
+              className="w-full p-2 border rounded text-black mb-2"
+          >
+            <option value="">Select Time</option>
+            {timeOptions.map(time => (
+                <option key={time} value={time}>{time}</option>
+            ))}
+          </select>
           <button onClick={handleDeleteReserva} className="w-full p-2 bg-red-500 text-white rounded">Delete Reserva
           </button>
         </div>

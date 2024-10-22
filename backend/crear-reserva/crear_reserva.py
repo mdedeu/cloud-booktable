@@ -38,8 +38,7 @@ def crear_reserva(event, context):
     localidad = body['localidad']
     categoria = body['categoria']
     nombre_restaurant = body['nombre_restaurant']
-    fecha_hora = body['datetime']
-    fecha_hora_timestamp = int(datetime.strptime(fecha_hora, "%Y-%m-%dT%H:%M:%SZ").timestamp()) # Asegúrate de que el formato es el correcto (e.g., ISO 8601)
+    fecha_hora_timestamp = int(body['datetime'])
     comensales = int(body['comensales'])
     user_id = body['user_id']
     user_name = body['user_name']
@@ -99,7 +98,7 @@ def crear_reserva(event, context):
         # Vamos a consultar todas las reservas que coinciden con la clave primaria y tienen la misma fecha
         response_reservas = reservas_table.query(
             KeyConditionExpression=Key('Localidad#Categoria#Nombre_restaurant').eq(clave_compuesta) & 
-                                   Key('Fecha_hora#ID_Mesa').begins_with(f"{fecha_hora}#")
+                                   Key('Fecha_hora#ID_Mesa').begins_with(f"{fecha_hora_timestamp}#")
         )
     except Exception as e:
         return {
@@ -138,8 +137,8 @@ def crear_reserva(event, context):
             reservas_table.put_item(
                 Item={
                     'Localidad#Categoria#Nombre_restaurant': clave_compuesta,
-                    'Fecha_hora#ID_Mesa': f"{fecha_hora}#{table_id}",
-                    'Fecha_hora': fecha_hora,
+                    'Fecha_hora#ID_Mesa': f"{fecha_hora_timestamp}#{table_id}",
+                    'Fecha_hora': fecha_hora_timestamp,
                     'ID_Mesa': table_id,
                     'Nombre_usuario': user_name,
                     'Mail_usuario': user_email,

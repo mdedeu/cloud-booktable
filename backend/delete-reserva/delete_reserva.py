@@ -52,7 +52,12 @@ def delete_reserva(event, context):
     except Exception as e:
         return {
             'statusCode': 500,
-            'body': json.dumps(f"Error consultando la tabla USUARIOS: {str(e)}")
+            'body': json.dumps(f"Error consultando la tabla USUARIOS: {str(e)}"),
+            'headers': {
+                'Access-Control-Allow-Origin': '*',
+                'Access-Control-Allow-Headers': 'Content-Type,X-Amz-Date,Authorization,X-Api-Key,X-Amz-Security-Token',
+                'Access-Control-Allow-Methods': 'OPTIONS,POST'
+            }
         }
     
     # Extraer los detalles de la reserva
