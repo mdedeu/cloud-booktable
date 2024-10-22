@@ -26,7 +26,12 @@ def admin_obtener_reservas(event, context):
     if campos_vacios:
         return {
             'statusCode': 400,
-            'body': json.dumps(f"Error: Todos los campos son requeridos. Los siguientes campos estan vacios o ausentes: {', '.join(campos_vacios)}")
+            'body': json.dumps(f"Error: Todos los campos son requeridos. Los siguientes campos estan vacios o ausentes: {', '.join(campos_vacios)}"),
+            'headers': {
+                'Access-Control-Allow-Origin': '*',
+                'Access-Control-Allow-Headers': 'Content-Type,X-Amz-Date,Authorization,X-Api-Key,X-Amz-Security-Token',
+                'Access-Control-Allow-Methods': 'OPTIONS,POST'
+            }
         }
     
     # Parámetros recibidos del usuario
@@ -53,11 +58,21 @@ def admin_obtener_reservas(event, context):
     except Exception as e:
         return {
             'statusCode': 500,
-            'body': json.dumps(f"Error al obtener las reservas: {str(e)}")
+            'body': json.dumps(f"Error al obtener las reservas: {str(e)}"),
+            'headers': {
+                'Access-Control-Allow-Origin': '*',
+                'Access-Control-Allow-Headers': 'Content-Type,X-Amz-Date,Authorization,X-Api-Key,X-Amz-Security-Token',
+                'Access-Control-Allow-Methods': 'OPTIONS,POST'
+            }
         }
     
     # Paso 2: Devolver las reservas
     return {
         'statusCode': 200,
-        'body': json.dumps(reservas)
+        'body': json.dumps(reservas),
+        'headers': {
+            'Access-Control-Allow-Origin': '*',
+            'Access-Control-Allow-Headers': 'Content-Type,X-Amz-Date,Authorization,X-Api-Key,X-Amz-Security-Token',
+            'Access-Control-Allow-Methods': 'OPTIONS,POST'
+        }
     }

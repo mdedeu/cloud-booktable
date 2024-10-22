@@ -27,7 +27,12 @@ def delete_reserva(event, context):
     if campos_vacios:
         return {
             'statusCode': 400,
-            'body': json.dumps(f"Error: Todos los campos son requeridos. Los siguientes campos estan vacios o ausentes: {', '.join(campos_vacios)}")
+            'body': json.dumps(f"Error: Todos los campos son requeridos. Los siguientes campos estan vacios o ausentes: {', '.join(campos_vacios)}"),
+            'headers': {
+                'Access-Control-Allow-Origin': '*',
+                'Access-Control-Allow-Headers': 'Content-Type,X-Amz-Date,Authorization,X-Api-Key,X-Amz-Security-Token',
+                'Access-Control-Allow-Methods': 'OPTIONS,POST'
+            }
         }
         
     # Parámetros recibidos del usuario
@@ -56,7 +61,12 @@ def delete_reserva(event, context):
     if not reservas_usuario:
         return {
             'statusCode': 404,
-            'body': json.dumps("No se encontró la reserva para el usuario.")
+            'body': json.dumps("No se encontró la reserva para el usuario."),
+            'headers': {
+                'Access-Control-Allow-Origin': '*',
+                'Access-Control-Allow-Headers': 'Content-Type,X-Amz-Date,Authorization,X-Api-Key,X-Amz-Security-Token',
+                'Access-Control-Allow-Methods': 'OPTIONS,POST'
+            }
         }
     
     # Obtener detalles de la reserva
@@ -82,7 +92,12 @@ def delete_reserva(event, context):
     except Exception as e:
         return {
             'statusCode': 500,
-            'body': json.dumps(f"Error borrando la reserva de la tabla RESERVAS: {str(e)}")
+            'body': json.dumps(f"Error borrando la reserva de la tabla RESERVAS: {str(e)}"),
+            'headers': {
+                'Access-Control-Allow-Origin': '*',
+                'Access-Control-Allow-Headers': 'Content-Type,X-Amz-Date,Authorization,X-Api-Key,X-Amz-Security-Token',
+                'Access-Control-Allow-Methods': 'OPTIONS,POST'
+            }
         }
     
     # Paso 3: Borrar la entrada del usuario en la tabla USUARIOS
@@ -96,10 +111,20 @@ def delete_reserva(event, context):
     except Exception as e:
         return {
             'statusCode': 500,
-            'body': json.dumps(f"Error borrando la reserva de la tabla USUARIOS: {str(e)}")
+            'body': json.dumps(f"Error borrando la reserva de la tabla USUARIOS: {str(e)}"),
+            'headers': {
+                'Access-Control-Allow-Origin': '*',
+                'Access-Control-Allow-Headers': 'Content-Type,X-Amz-Date,Authorization,X-Api-Key,X-Amz-Security-Token',
+                'Access-Control-Allow-Methods': 'OPTIONS,POST'
+            }
         }
     
     return {
         'statusCode': 200,
-        'body': json.dumps("Reserva borrada exitosamente.")
+        'body': json.dumps("Reserva borrada exitosamente."),
+        'headers': {
+            'Access-Control-Allow-Origin': '*',
+            'Access-Control-Allow-Headers': 'Content-Type,X-Amz-Date,Authorization,X-Api-Key,X-Amz-Security-Token',
+            'Access-Control-Allow-Methods': 'OPTIONS,POST'
+        }
     }

@@ -149,7 +149,12 @@ def crear_reserva(event, context):
         except Exception as e:
             return {
                 'statusCode': 500,
-                'body': json.dumps(f"Error creando la reserva en la tabla RESERVAS: {str(e)}")
+                'body': json.dumps(f"Error creando la reserva en la tabla RESERVAS: {str(e)}"),
+                'headers': {
+                    'Access-Control-Allow-Origin': '*',
+                    'Access-Control-Allow-Headers': 'Content-Type,X-Amz-Date,Authorization,X-Api-Key,X-Amz-Security-Token',
+                    'Access-Control-Allow-Methods': 'OPTIONS,POST'
+                }
             }
         
         # Paso 6b: Asociar la reserva al usuario en la tabla USUARIOS
@@ -170,16 +175,31 @@ def crear_reserva(event, context):
         except Exception as e:
             return {
                 'statusCode': 500,
-                'body': json.dumps(f"Error creando la reserva en la tabla USUARIO: {str(e)}")
+                'body': json.dumps(f"Error creando la reserva en la tabla USUARIO: {str(e)}"),
+                'headers': {
+                    'Access-Control-Allow-Origin': '*',
+                    'Access-Control-Allow-Headers': 'Content-Type,X-Amz-Date,Authorization,X-Api-Key,X-Amz-Security-Token',
+                    'Access-Control-Allow-Methods': 'OPTIONS,POST'
+                }
             }
         
         return {
             'statusCode': 200,
-            'body': json.dumps(f"Reserva creada exitosamente en la mesa {table_id} para {user_name}.")
+            'body': json.dumps(f"Reserva creada exitosamente en la mesa {table_id} para {user_name}."),
+            'headers': {
+                'Access-Control-Allow-Origin': '*',
+                'Access-Control-Allow-Headers': 'Content-Type,X-Amz-Date,Authorization,X-Api-Key,X-Amz-Security-Token',
+                'Access-Control-Allow-Methods': 'OPTIONS,POST'
+            }
         }
     else:
         # No hay mesas disponibles
         return {
             'statusCode': 400,
-            'body': json.dumps("No hay mesas disponibles para la cantidad de comensales en el horario seleccionado.")
+            'body': json.dumps("No hay mesas disponibles para la cantidad de comensales en el horario seleccionado."),
+            'headers': {
+                'Access-Control-Allow-Origin': '*',
+                'Access-Control-Allow-Headers': 'Content-Type,X-Amz-Date,Authorization,X-Api-Key,X-Amz-Security-Token',
+                'Access-Control-Allow-Methods': 'OPTIONS,POST'
+            }
         }

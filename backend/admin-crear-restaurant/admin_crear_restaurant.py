@@ -26,7 +26,12 @@ def admin_crear_restaurant(event, context):
     if campos_vacios:
         return {
             'statusCode': 400,
-            'body': json.dumps(f"Error: Todos los campos son requeridos. Los siguientes campos estan vacios o ausentes: {', '.join(campos_vacios)}")
+            'body': json.dumps(f"Error: Todos los campos son requeridos. Los siguientes campos estan vacios o ausentes: {', '.join(campos_vacios)}"),
+            'headers': {
+                'Access-Control-Allow-Origin': '*',
+                'Access-Control-Allow-Headers': 'Content-Type,X-Amz-Date,Authorization,X-Api-Key,X-Amz-Security-Token',
+                'Access-Control-Allow-Methods': 'OPTIONS,POST'
+            }
         }
     
     # Parámetros recibidos del usuario
@@ -52,12 +57,22 @@ def admin_crear_restaurant(event, context):
         if 'Item' in response:
             return {
                 'statusCode': 409,
-                'body': json.dumps("Error: Ya existe un restaurante con el mismo nombre en esta localidad y categoria.")
+                'body': json.dumps("Error: Ya existe un restaurante con el mismo nombre en esta localidad y categoria."),
+                'headers': {
+                    'Access-Control-Allow-Origin': '*',
+                    'Access-Control-Allow-Headers': 'Content-Type,X-Amz-Date,Authorization,X-Api-Key,X-Amz-Security-Token',
+                    'Access-Control-Allow-Methods': 'OPTIONS,POST'
+                }
             }
     except Exception as e:
         return {
             'statusCode': 500,
-            'body': json.dumps(f"Error consultando la tabla RESTAURANTES: {str(e)}")
+            'body': json.dumps(f"Error consultando la tabla RESTAURANTES: {str(e)}"),
+            'headers': {
+                'Access-Control-Allow-Origin': '*',
+                'Access-Control-Allow-Headers': 'Content-Type,X-Amz-Date,Authorization,X-Api-Key,X-Amz-Security-Token',
+                'Access-Control-Allow-Methods': 'OPTIONS,POST'
+            }
         }
     
     # Paso 2: Crear el nuevo restaurante
@@ -72,10 +87,20 @@ def admin_crear_restaurant(event, context):
     except Exception as e:
         return {
             'statusCode': 500,
-            'body': json.dumps(f"Error creando el restaurante: {str(e)}")
+            'body': json.dumps(f"Error creando el restaurante: {str(e)}"),
+            'headers': {
+                'Access-Control-Allow-Origin': '*',
+                'Access-Control-Allow-Headers': 'Content-Type,X-Amz-Date,Authorization,X-Api-Key,X-Amz-Security-Token',
+                'Access-Control-Allow-Methods': 'OPTIONS,POST'
+            }
         }
     
     return {
         'statusCode': 201,
-        'body': json.dumps("Restaurante creado exitosamente.")
+        'body': json.dumps("Restaurante creado exitosamente."),
+        'headers': {
+            'Access-Control-Allow-Origin': '*',
+            'Access-Control-Allow-Headers': 'Content-Type,X-Amz-Date,Authorization,X-Api-Key,X-Amz-Security-Token',
+            'Access-Control-Allow-Methods': 'OPTIONS,POST'
+        }
     }

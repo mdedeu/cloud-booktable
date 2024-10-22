@@ -41,7 +41,12 @@ def obtener_reservas(event, context):
     except Exception as e:
         return {
             'statusCode': 500,
-            'body': json.dumps(f"Error consultando la tabla USUARIOS: {str(e)}")
+            'body': json.dumps(f"Error consultando la tabla USUARIOS: {str(e)}"),
+            'headers': {
+                'Access-Control-Allow-Origin': '*',
+                'Access-Control-Allow-Headers': 'Content-Type,X-Amz-Date,Authorization,X-Api-Key,X-Amz-Security-Token',
+                'Access-Control-Allow-Methods': 'OPTIONS,POST'
+            }
         }
     
     # Paso 2: Extraer las reservas vigentes
@@ -50,10 +55,20 @@ def obtener_reservas(event, context):
     if reservas_vigentes:
         return {
             'statusCode': 200,
-            'body': json.dumps(reservas_vigentes)
+            'body': json.dumps(reservas_vigentes),
+            'headers': {
+                'Access-Control-Allow-Origin': '*',
+                'Access-Control-Allow-Headers': 'Content-Type,X-Amz-Date,Authorization,X-Api-Key,X-Amz-Security-Token',
+                'Access-Control-Allow-Methods': 'OPTIONS,POST'
+            }
         }
     else:
         return {
             'statusCode': 404,
-            'body': json.dumps("No hay reservas vigentes para el usuario.")
+            'body': json.dumps("No hay reservas vigentes para el usuario."),
+            'headers': {
+                'Access-Control-Allow-Origin': '*',
+                'Access-Control-Allow-Headers': 'Content-Type,X-Amz-Date,Authorization,X-Api-Key,X-Amz-Security-Token',
+                'Access-Control-Allow-Methods': 'OPTIONS,POST'
+            }
         }

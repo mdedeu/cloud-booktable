@@ -121,8 +121,82 @@ export default function Home() {
 
   return (
       <div className="container mx-auto p-4">
-        <h1 className="text-2xl font-bold mb-4">API Testing Frontend</h1>
+        <h1 className="text-3xl font-bold mb-4">API Testing Frontend</h1>
+        <h2 className="text-2xl font-bold mb-4"> Restaurant OWNER </h2>
+        <div className="mb-8">
+          <h2 className="text-xl font-semibold mb-2">Create Restaurant</h2>
+          <form onSubmit={handleCreateRestaurant} className="space-y-2">
+            <input
+                type="text"
+                placeholder="Localidad"
+                value={restaurantData.localidad}
+                onChange={(e) => setRestaurantData({...restaurantData, localidad: e.target.value})}
+                className="w-full p-2 border rounded text-black"
+            />
+            <input
+                type="text"
+                placeholder="Categoria"
+                value={restaurantData.categoria}
+                onChange={(e) => setRestaurantData({...restaurantData, categoria: e.target.value})}
+                className="w-full p-2 border rounded text-black"
+            />
+            <input
+                type="text"
+                placeholder="Nombre Restaurant"
+                value={restaurantData.nombre_restaurant}
+                onChange={(e) => setRestaurantData({...restaurantData, nombre_restaurant: e.target.value})}
+                className="w-full p-2 border rounded text-black"
+            />
+            <input
+                type="text"
+                placeholder="ID Usuario"
+                value={restaurantData.id_usuario}
+                onChange={(e) => setRestaurantData({...restaurantData, id_usuario: e.target.value})}
+                className="w-full p-2 border rounded text-black"
+            />
+            <button type="submit" className="w-full p-2 bg-purple-500 text-white rounded">Create Restaurant</button>
+          </form>
+        </div>
 
+        <div className="mb-8">
+          <h2 className="text-xl font-semibold mb-2">Create Mesa</h2>
+          <form onSubmit={handleCreateMesa} className="space-y-2">
+            <input
+                type="text"
+                placeholder="Location"
+                value={mesaData.localidad}
+                onChange={(e) => setMesaData({...mesaData, localidad: e.target.value})}
+                className="w-full p-2 border rounded text-black"
+            />
+            <input
+                type="text"
+                placeholder="Restaurant Name"
+                value={mesaData.restaurant_name}
+                onChange={(e) => setMesaData({...mesaData, restaurant_name: e.target.value})}
+                className="w-full p-2 border rounded text-black"
+            />
+            <input
+                type="number"
+                placeholder="Capacidad"
+                value={mesaData.capacidad}
+                onChange={(e) => setMesaData({...mesaData, capacidad: e.target.value})}
+                className="w-full p-2 border rounded text-black"
+            />
+            <button type="submit" className="w-full p-2 bg-yellow-500 text-white rounded">Create Mesa</button>
+          </form>
+        </div>
+
+        <div className="mb-8">
+          <h2 className="text-xl font-semibold mb-2">Get Admin Reservas</h2>
+          <button onClick={handleGetAdminReservas} className="w-full p-2 bg-indigo-500 text-white rounded">Get Admin
+            Reservas
+          </button>
+        </div>
+        <div className="mt-8 mb-8">
+          <h2 className="text-xl font-semibold mb-2">Result</h2>
+          <pre className="bg-gray-100 p-4 rounded overflow-x-auto text-black">{result}</pre>
+        </div>
+        <h2 className="text-2xl font-bold mb-4"> Clientes </h2>
         <div className="mb-8">
           <h2 className="text-xl font-semibold mb-2">Create Reserva</h2>
           <form onSubmit={handleReservaSubmit} className="space-y-2">
@@ -196,78 +270,10 @@ export default function Home() {
               onChange={(e) => setReservaId(e.target.value)}
               className="w-full p-2 border rounded text-black mb-2"
           />
-          <button onClick={handleDeleteReserva} className="w-full p-2 bg-red-500 text-white rounded">Delete Reserva</button>
-        </div>
-
-        <div className="mb-8">
-          <h2 className="text-xl font-semibold mb-2">Create Restaurant</h2>
-          <form onSubmit={handleCreateRestaurant} className="space-y-2">
-            <input
-                type="text"
-                placeholder="Localidad"
-                value={restaurantData.localidad}
-                onChange={(e) => setRestaurantData({...restaurantData, localidad: e.target.value})}
-                className="w-full p-2 border rounded text-black"
-            />
-            <input
-                type="text"
-                placeholder="Categoria"
-                value={restaurantData.categoria}
-                onChange={(e) => setRestaurantData({...restaurantData, categoria: e.target.value})}
-                className="w-full p-2 border rounded text-black"
-            />
-            <input
-                type="text"
-                placeholder="Nombre Restaurant"
-                value={restaurantData.nombre_restaurant}
-                onChange={(e) => setRestaurantData({...restaurantData, nombre_restaurant: e.target.value})}
-                className="w-full p-2 border rounded text-black"
-            />
-            <input
-                type="text"
-                placeholder="ID Usuario"
-                value={restaurantData.id_usuario}
-                onChange={(e) => setRestaurantData({...restaurantData, id_usuario: e.target.value})}
-                className="w-full p-2 border rounded text-black"
-            />
-            <button type="submit" className="w-full p-2 bg-purple-500 text-white rounded">Create Restaurant</button>
-          </form>
-        </div>
-
-        <div className="mb-8">
-          <h2 className="text-xl font-semibold mb-2">Create Mesa</h2>
-          <form onSubmit={handleCreateMesa} className="space-y-2">
-            <input
-                type="text"
-                placeholder="Location"
-                value={mesaData.localidad}
-                onChange={(e) => setMesaData({...mesaData, localidad: e.target.value})}
-                className="w-full p-2 border rounded text-black"
-            />
-            <input
-                type="text"
-                placeholder="Restaurant Name"
-                value={mesaData.restaurant_name}
-                onChange={(e) => setMesaData({...mesaData, restaurant_name: e.target.value})}
-                className="w-full p-2 border rounded text-black"
-            />
-            <input
-                type="number"
-                placeholder="Capacidad"
-                value={mesaData.capacidad}
-                onChange={(e) => setMesaData({...mesaData, capacidad: e.target.value})}
-                className="w-full p-2 border rounded text-black"
-            />
-            <button type="submit" className="w-full p-2 bg-yellow-500 text-white rounded">Create Mesa</button>
-          </form>
-        </div>
-
-        <div className="mb-8">
-          <h2 className="text-xl font-semibold mb-2">Get Admin Reservas</h2>
-          <button onClick={handleGetAdminReservas} className="w-full p-2 bg-indigo-500 text-white rounded">Get Admin
-            Reservas
+          <button onClick={handleDeleteReserva} className="w-full p-2 bg-red-500 text-white rounded">Delete Reserva
           </button>
         </div>
+
 
         <div className="mt-8">
           <h2 className="text-xl font-semibold mb-2">Result</h2>

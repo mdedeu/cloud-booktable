@@ -26,7 +26,12 @@ def admin_crear_mesa(event, context):
     if campos_vacios:
         return {
             'statusCode': 400,
-            'body': json.dumps(f"Error: Todos los campos son requeridos. Los siguientes campos estan vacios o ausentes: {', '.join(campos_vacios)}")
+            'body': json.dumps(f"Error: Todos los campos son requeridos. Los siguientes campos estan vacios o ausentes: {', '.join(campos_vacios)}"),
+            'headers': {
+                'Access-Control-Allow-Origin': '*',
+                'Access-Control-Allow-Headers': 'Content-Type,X-Amz-Date,Authorization,X-Api-Key,X-Amz-Security-Token',
+                'Access-Control-Allow-Methods': 'OPTIONS,POST'
+            }
         }
         
     # Parámetros recibidos del usuario
@@ -51,12 +56,22 @@ def admin_crear_mesa(event, context):
         if 'Item' not in response_restaurante:
             return {
                 'statusCode': 404,
-                'body': json.dumps(f"Error: El restaurante '{nombre_restaurant}' con categoria '{categoria}' no existe en la localidad '{localidad}'.")
+                'body': json.dumps(f"Error: El restaurante '{nombre_restaurant}' con categoria '{categoria}' no existe en la localidad '{localidad}'."),
+                'headers': {
+                    'Access-Control-Allow-Origin': '*',
+                    'Access-Control-Allow-Headers': 'Content-Type,X-Amz-Date,Authorization,X-Api-Key,X-Amz-Security-Token',
+                    'Access-Control-Allow-Methods': 'OPTIONS,POST'
+                }
             }
     except Exception as e:
         return {
             'statusCode': 500,
-            'body': json.dumps(f"Error consultando la tabla RESTAURANTES: {str(e)}")
+            'body': json.dumps(f"Error consultando la tabla RESTAURANTES: {str(e)}"),
+            'headers': {
+                'Access-Control-Allow-Origin': '*',
+                'Access-Control-Allow-Headers': 'Content-Type,X-Amz-Date,Authorization,X-Api-Key,X-Amz-Security-Token',
+                'Access-Control-Allow-Methods': 'OPTIONS,POST'
+            }
         }
     
     # Paso 2: Generar un ID único para la mesa dentro del contexto del restaurante
@@ -77,10 +92,20 @@ def admin_crear_mesa(event, context):
     except Exception as e:
         return {
             'statusCode': 500,
-            'body': json.dumps(f"Error agregando la mesa: {str(e)}")
+            'body': json.dumps(f"Error agregando la mesa: {str(e)}"),
+            'headers': {
+                'Access-Control-Allow-Origin': '*',
+                'Access-Control-Allow-Headers': 'Content-Type,X-Amz-Date,Authorization,X-Api-Key,X-Amz-Security-Token',
+                'Access-Control-Allow-Methods': 'OPTIONS,POST'
+            }
         }
     
     return {
         'statusCode': 201,
-        'body': json.dumps("Mesa agregada exitosamente.")
+        'body': json.dumps("Mesa agregada exitosamente."),
+        'headers': {
+            'Access-Control-Allow-Origin': '*',
+            'Access-Control-Allow-Headers': 'Content-Type,X-Amz-Date,Authorization,X-Api-Key,X-Amz-Security-Token',
+            'Access-Control-Allow-Methods': 'OPTIONS,POST'
+        }
     }
