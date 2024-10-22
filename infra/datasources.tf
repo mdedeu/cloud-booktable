@@ -37,9 +37,6 @@ data "archive_file" "admin_obtener_reservas_zip" {
   output_path = "${path.module}/../backend/admin-obtener-reservas/admin_obtener_reservas.zip"
 }
 
-
-
-
 data "archive_file" "frontend" {
   type        = "zip"
   source_dir  = "${path.module}/../frontend"

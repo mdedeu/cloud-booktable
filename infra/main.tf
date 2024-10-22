@@ -64,7 +64,7 @@ resource "aws_vpc_endpoint" "dynamodb" {
 #############################
 
 resource "aws_s3_bucket" "frontend_bucket" {
-  bucket = "frontend-bucket-cloudbooktable-marcos"  
+  bucket = "frontend-bucket-cloudbooktable-matias"  
 
   tags = {
     Name        = "Frontend Bucket"
@@ -434,9 +434,9 @@ module "delete_reserva" {
 
   resource_id    = aws_api_gateway_resource.delete_reserva.id
   methods = {
-    DELETE = aws_lambda_function.admin_crear_mesa_lambda
+    DELETE = aws_lambda_function.delete_reserva_lambda
   }
-  path        = "/reservas/{id}"
+  path        = "reservas/{id}"
   stage       = "prod"
   lambdaName  = "DeleteReserva"
 }
@@ -453,7 +453,7 @@ module "admin_restaurant" {
   methods = {
     POST = aws_lambda_function.admin_crear_restaurant_lambda
   }
-  path        = "/admin/restaurant"
+  path        = "admin/restaurant"
   stage       = "prod"
   lambdaName  = "CrearRestaurant"
 }
@@ -470,7 +470,7 @@ module "admin_mesas" {
   methods = {
     POST = aws_lambda_function.admin_crear_mesa_lambda
   }
-  path        = "/admin/mesas"
+  path        = "admin/mesas"
   stage       = "prod"
   lambdaName  = "CrearMesa"
 }
@@ -487,7 +487,7 @@ module "admin_reservas"{
   methods = {
     GET = aws_lambda_function.admin_obtener_reservas_lambda
   }
-  path        = "/admin/reservas"
+  path        = "admin/reservas"
   stage       = "prod"
   lambdaName  = "AdminObtenerReservas"
 }
