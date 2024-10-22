@@ -136,6 +136,41 @@ resource "null_resource" "frontend_deployment" {
 #############################
 # DynamoDB Table
 #############################
+
+module "dynamodb_tables" {
+  source = "./dynamodb_module"  # Path to the module
+
+  tables = {
+    "MESAS" = {
+      pk            = "Localidad#Categoria#Nombre_restaurant"
+      pk_data_type  = "S"      # S = String
+      sk            = "ID_Mesa"
+      sk_data_type  = "S"      # S = String
+    }
+    "RESTAURANTES" = {
+      pk            = "Localidad"
+      pk_data_type  = "S"      # S = String
+      sk            = "Categoria#Nombre_restaurant"
+      sk_data_type  = "S"      # S = String
+    }
+    "USUARIOS" = {
+      pk            = "ID_Usuario"
+      pk_data_type  = "S"      # S = String
+      sk            = "Fecha_hora"
+      sk_data_type  = "N"      # N = Number
+    }
+    "RESERVAS" = {
+      pk            = "Localidad#Categoria#Nombre_restaurant"
+      pk_data_type  = "S"      # S = String
+      sk            = "Fecha_hora#ID_Mesa"
+      sk_data_type  = "S"      # S = String
+    }
+  }
+}
+
+
+/*
+
 # RESERVAS Table
 resource "aws_dynamodb_table" "reservas_table" {
   name         = "RESERVAS"
@@ -227,9 +262,58 @@ resource "aws_dynamodb_table" "restaurantes_table" {
     Environment = "Dev"
   }
 }
+
+*/
+
 ##########LAMBDAS 
 
-#Lambda para Crear Mesa                                                                     
+# Creacion de las lambdas con modulo
+
+module "my_lambdas" {
+  source = "./lambda_module"
+
+  lambda_functions = {
+    admin_crear_mesa = {
+      name = "CrearMesaLambda"
+      code = data.archive_file.admin_crear_mesa_zip.output_path
+      source_code_hash = data.archive_file.admin_crear_mesa_zip.output_base64sha256
+    }
+    delete_reserva = {
+      name = "DeleteReservaLambda"
+      code = data.archive_file.delete_reserva_zip.output_path
+      source_code_hash = data.archive_file.delete_reserva_zip.output_base64sha256
+    }
+    crear_reserva = {
+      name = "CrearReservaLambda"
+      code = data.archive_file.crear_reserva_zip.output_path
+      source_code_hash = data.archive_file.crear_reserva_zip.output_base64sha256
+    }
+    admin_crear_restaurant = {
+      name = "CrearRestaurantLambda"
+      code = data.archive_file.admin_crear_restaurant_zip.output_path
+      source_code_hash = data.archive_file.admin_crear_restaurant_zip.output_base64sha256
+    }
+    obtener_reservas = {
+      name = "ObtenerReservasLambda"
+      code = data.archive_file.obtener_reservas_zip.output_path
+      source_code_hash = data.archive_file.obtener_reservas_zip.output_base64sha256
+    }
+    admin_obtener_reservas = {
+      name = "AdminObtenerReservasLambda"
+      code = data.archive_file.admin_obtener_reservas_zip.output_path
+      source_code_hash = data.archive_file.admin_obtener_reservas_zip.output_base64sha256
+    }
+  }
+
+  lambda_role_arn  = data.aws_iam_role.labrole.arn  # Referencio el ARN del LabRole
+  vpc_subnets      = module.vpc.private_subnets
+  security_groups  = [aws_security_group.lambda_sg.id]
+}
+
+/*
+
+#Lambda para Crear Mesa   
+
 resource "aws_lambda_function" "admin_crear_mesa_lambda" {
   filename         = data.archive_file.admin_crear_mesa_zip.output_path
   function_name    = "CrearMesaLambda"
@@ -348,6 +432,7 @@ resource "aws_lambda_function" "admin_obtener_reservas_lambda" {
   }
 }
 
+*/
 
 #############################
 # API Gateway
@@ -410,8 +495,8 @@ module "reserva" {
   }
   resource_id    = aws_api_gateway_resource.reservas.id
   methods   = {
-    POST = aws_lambda_function.crear_reserva_lambda,
-    GET = aws_lambda_function.obtener_reservas_lambda
+    POST = module.my_lambdas.lambda_functions["crear_reserva"],
+    GET = module.my_lambdas.lambda_functions["obtener_reservas"]
   }  # List of HTTP methods you want to configure
   path        = "reservas"
   stage       = "prod"
@@ -419,8 +504,8 @@ module "reserva" {
   depends_on = [ 
    aws_api_gateway_resource.reservas,
    aws_api_gateway_rest_api.my_api,
-   aws_lambda_function.crear_reserva_lambda,
-   aws_lambda_function.obtener_reservas_lambda
+   module.my_lambdas.lambda_functions["crear_reserva"],
+   module.my_lambdas.lambda_functions["obtener_reservas"]
   ]
 }
 
@@ -434,7 +519,7 @@ module "delete_reserva" {
 
   resource_id    = aws_api_gateway_resource.delete_reserva.id
   methods = {
-    DELETE = aws_lambda_function.delete_reserva_lambda
+    DELETE = module.my_lambdas.lambda_functions["delete_reserva"]
   }
   path        = "reservas/{id}"
   stage       = "prod"
@@ -451,7 +536,7 @@ module "admin_restaurant" {
 
   resource_id    = aws_api_gateway_resource.admin_restaurant.id
   methods = {
-    POST = aws_lambda_function.admin_crear_restaurant_lambda
+    POST = module.my_lambdas.lambda_functions["admin_crear_restaurant"]
   }
   path        = "admin/restaurant"
   stage       = "prod"
@@ -468,7 +553,7 @@ module "admin_mesas" {
 
   resource_id    = aws_api_gateway_resource.admin_mesas.id
   methods = {
-    POST = aws_lambda_function.admin_crear_mesa_lambda
+    POST = module.my_lambdas.lambda_functions["admin_crear_mesa"]
   }
   path        = "admin/mesas"
   stage       = "prod"
@@ -485,7 +570,7 @@ module "admin_reservas"{
 
   resource_id    = aws_api_gateway_resource.admin_reservas.id
   methods = {
-    GET = aws_lambda_function.admin_obtener_reservas_lambda
+    GET = module.my_lambdas.lambda_functions["admin_obtener_reservas"]
   }
   path        = "admin/reservas"
   stage       = "prod"
