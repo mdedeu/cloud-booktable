@@ -18,3 +18,9 @@ data "archive_file" "crear_restaurant_zip" {
   source_dir  = "${path.module}/../backend/crear-restaurant"
   output_path = "${path.module}/../backend/crear-restaurant/crear_restaurant.zip"
 }
+
+data "archive_file" "frontend" {
+  type        = "zip"
+  source_dir  = "${path.module}/../frontend"
+  output_path = "${path.module}/../frontend.zip"
+}

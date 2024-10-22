@@ -64,7 +64,7 @@ resource "aws_vpc_endpoint" "dynamodb" {
 #############################
 
 resource "aws_s3_bucket" "frontend_bucket" {
-  bucket = "frontend-bucket-cloudbooktable-matias"  
+  bucket = "frontend-bucket-cloudbooktable-marcos"  
 
   tags = {
     Name        = "Frontend Bucket"
@@ -115,6 +115,7 @@ resource "aws_s3_bucket_policy" "frontend_bucket_policy" {
 resource "null_resource" "frontend_deployment" {
   triggers = {
     api_gateway_url = aws_api_gateway_deployment.my_api_deployment.invoke_url
+    file_hash       = data.archive_file.frontend.output_base64sha256
   }
 
   provisioner "local-exec" {
@@ -328,8 +329,6 @@ resource "aws_api_gateway_resource" "admin_mesas" {
 
 
 ####Métodos####
-
-
 # Metodo POST para "/admin/restaurant"
 resource "aws_api_gateway_method" "post_admin_restaurant" {
   rest_api_id   = aws_api_gateway_rest_api.my_api.id

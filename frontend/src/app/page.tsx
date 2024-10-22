@@ -129,7 +129,7 @@ export default function Home() {
             <input
                 type="text"
                 placeholder="Location"
-                value={reservaData.restaurant_name}
+                value={reservaData.localidad}
                 onChange={(e) => setReservaData({...reservaData, localidad: e.target.value})}
                 className="w-full p-2 border rounded text-black"
             />
@@ -240,7 +240,7 @@ export default function Home() {
             <input
                 type="text"
                 placeholder="Location"
-                value={reservaData.restaurant_name}
+                value={reservaData.localidad}
                 onChange={(e) => setReservaData({...reservaData, localidad: e.target.value})}
                 className="w-full p-2 border rounded text-black"
             />
