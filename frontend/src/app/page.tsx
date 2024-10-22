@@ -36,6 +36,9 @@ export default function Home() {
     categoria: '',
     nombre_restaurant: ''
   });
+  const [getReservasData, setGetReservasData] = useState({
+    user_id:''
+  });
 
 
   const [result, setResult] = useState('');
@@ -81,7 +84,12 @@ export default function Home() {
 
   const handleGetReservas = async () => {
     try {
-      const response = await fetch(`${backendUrl}/reservas`);
+
+      const queryParams = new URLSearchParams({
+        user_id: getReservasData.user_id
+      });
+
+      const response = await fetch(`${backendUrl}/reservas?${queryParams.toString()}`);
       const data = await response.json();
       setResult(JSON.stringify(data));
     } catch (error) {
@@ -345,6 +353,13 @@ export default function Home() {
 
         <div className="mb-8">
           <h2 className="text-xl font-semibold mb-2">Get Reservas</h2>
+          <input
+              type="string"
+              placeholder="User ID"
+              value={getReservasData.user_id}
+              onChange={(e) => setGetReservasData({user_id: e.target.value})}
+              className="w-full p-2 border rounded text-black mb-2"
+          />
           <button onClick={handleGetReservas} className="w-full p-2 bg-green-500 text-white rounded">Get Reservas
           </button>
         </div>
