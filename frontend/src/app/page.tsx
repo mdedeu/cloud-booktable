@@ -128,7 +128,7 @@ export default function Home() {
           <form onSubmit={handleReservaSubmit} className="space-y-2">
             <input
                 type="text"
-                placeholder="Location"
+                placeholder="Location"g
                 value={reservaData.localidad}
                 onChange={(e) => setReservaData({...reservaData, localidad: e.target.value})}
                 className="w-full p-2 border rounded text-black"
