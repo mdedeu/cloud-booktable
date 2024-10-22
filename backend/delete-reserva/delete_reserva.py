@@ -1,7 +1,7 @@
 import boto3
 from boto3.dynamodb.conditions import Key
 import json
-from datetime import datetime  # Importa el módulo datetime
+from datetime import datetime, timedelta  # Importa el módulo datetime
 
 dynamodb = boto3.resource('dynamodb')
 
@@ -38,6 +38,9 @@ def delete_reserva(event, context):
     # Parámetros recibidos del usuario
     user_id = body['user_id']
     fecha_hora_timestamp = int(body['datetime'])
+    fecha_hora_utc = datetime.utcfromtimestamp(fecha_hora_timestamp)
+    fecha_hora_gmt3 = (fecha_hora_utc - timedelta(hours=3)).isoformat()
+
     
     # Inicialización de las tablas
     usuarios_table = dynamodb.Table('USUARIOS')
@@ -90,7 +93,7 @@ def delete_reserva(event, context):
         reservas_table.delete_item(
             Key={
                 'Localidad#Categoria#Nombre_restaurant': clave_compuesta, #PK
-                'Fecha_hora#ID_Mesa': f"{fecha_hora_timestamp}#{id_mesa}"  #SK
+                'Fecha_hora#ID_Mesa': f"{fecha_hora_gmt3}#{id_mesa}"  #SK
             }
         )
     except Exception as e:
