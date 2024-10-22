@@ -39,10 +39,3 @@ output "dynamodb_mesas_name" {
   description = "Nombre de la tabla Mesas DynamoDB"
   value       = aws_dynamodb_table.mesas_table.name
 }
-
-#############################
-
-output "lambda_hello_function_name" {
-  description = "Nombre de la función Lambda"
-  value       = aws_lambda_function.crear_mesa_lambda.function_name
-}

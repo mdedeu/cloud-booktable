@@ -228,14 +228,15 @@ resource "aws_dynamodb_table" "restaurantes_table" {
   }
 }
 ##########LAMBDAS 
+
 #Lambda para Crear Mesa                                                                     
-resource "aws_lambda_function" "crear_mesa_lambda" {
-  filename         = data.archive_file.crear_mesa_zip.output_path
+resource "aws_lambda_function" "admin_crear_mesa_lambda" {
+  filename         = data.archive_file.admin_crear_mesa_zip.output_path
   function_name    = "CrearMesaLambda"
   role             = var.lambda_execution_role_arn
-  handler          = "crear_mesa.crear_mesa"  
+  handler          = "admin_crear_mesa.admin_crear_mesa"
   runtime          = "python3.12"    
-  source_code_hash = data.archive_file.crear_mesa_zip.output_base64sha256
+  source_code_hash = data.archive_file.admin_crear_mesa_zip.output_base64sha256
 
  vpc_config {
     subnet_ids         = module.vpc.private_subnets
@@ -244,6 +245,27 @@ resource "aws_lambda_function" "crear_mesa_lambda" {
 
   tags = {
     Name        = "Crear Mesa Lambda"
+    Environment = "Dev"
+  }
+}
+
+#Lambda para delete Reserva
+
+resource "aws_lambda_function" "delete_reserva_lambda" {
+  filename         = data.archive_file.delete_reserva_zip.output_path
+  function_name    = "DeleteReservaLambda"
+  role             = var.lambda_execution_role_arn
+  handler          = "delete_reserva.delete_reserva"  
+  runtime          = "python3.12"    
+  source_code_hash = data.archive_file.delete_reserva_zip.output_base64sha256
+
+ vpc_config {
+    subnet_ids         = module.vpc.private_subnets
+    security_group_ids = [aws_security_group.lambda_sg.id]
+  }
+
+  tags = {
+    Name        = "Delete Reserva Lambda"
     Environment = "Dev"
   }
 }
@@ -269,13 +291,13 @@ resource "aws_lambda_function" "crear_reserva_lambda" {
 }
 
 #Lambda para Crear Restaurante                                                                 
-resource "aws_lambda_function" "crear_restaurant_lambda" {
-  filename         = data.archive_file.crear_restaurant_zip.output_path
+resource "aws_lambda_function" "admin_crear_restaurant_lambda" {
+  filename         = data.archive_file.admin_crear_restaurant_zip.output_path
   function_name    = "CrearRestaurantLambda"
   role             = var.lambda_execution_role_arn
-  handler          = "crear_restaurant.crear_restaurant"  
+  handler          = "admin_crear_restaurant.admin_crear_restaurant"
   runtime          = "python3.12"    
-  source_code_hash = data.archive_file.crear_restaurant_zip.output_base64sha256
+  source_code_hash = data.archive_file.admin_crear_restaurant_zip.output_base64sha256
 
  vpc_config {
     subnet_ids         = module.vpc.private_subnets
@@ -288,10 +310,48 @@ resource "aws_lambda_function" "crear_restaurant_lambda" {
   }
 }
 
+resource "aws_lambda_function" "obtener_reservas_lambda" {
+  filename         = data.archive_file.obtener_reservas_zip.output_path
+  function_name    = "ObtenerReservasLambda"
+  role             = var.lambda_execution_role_arn
+  handler          = "obtener_reserva.obtener_reserva"  
+  runtime          = "python3.12"    
+  source_code_hash = data.archive_file.obtener_reservas_zip.output_base64sha256
+
+ vpc_config {
+    subnet_ids         = module.vpc.private_subnets
+    security_group_ids = [aws_security_group.lambda_sg.id]
+  }
+
+  tags = {
+    Name        = "Obtener Reservas del Usuario Lambda"
+    Environment = "Dev"
+  }
+}
+
+resource "aws_lambda_function" "admin_obtener_reservas_lambda" {
+  filename         = data.archive_file.admin_obtener_reservas_zip.output_path
+  function_name    = "AdminObtenerReservasLambda"
+  role             = var.lambda_execution_role_arn
+  handler          = "admin_obtener_reserva.admin_obtener_reserva"  
+  runtime          = "python3.12"    
+  source_code_hash = data.archive_file.admin_obtener_reservas_zip.output_base64sha256
+
+ vpc_config {
+    subnet_ids         = module.vpc.private_subnets
+    security_group_ids = [aws_security_group.lambda_sg.id]
+  }
+
+  tags = {
+    Name        = "Obtener Reservas del Restaurnt del dia Lambda"
+    Environment = "Dev"
+  }
+}
+
+
 #############################
 # API Gateway
 #############################
-
 
 resource "aws_api_gateway_rest_api" "my_api" {
   name        = "MiAPI"
@@ -304,6 +364,13 @@ resource "aws_api_gateway_resource" "reservas" {
   rest_api_id = aws_api_gateway_rest_api.my_api.id
   parent_id   = aws_api_gateway_rest_api.my_api.root_resource_id
   path_part   = "reservas"
+}
+
+# Recurso API Gateway para /reservas/_id
+resource "aws_api_gateway_resource" "delete_reserva" {
+  rest_api_id = aws_api_gateway_rest_api.my_api.id
+  parent_id   = aws_api_gateway_resource.reservas.id
+  path_part   = "{id}"
 }
 
 # Recurso API Gateway para "/admin"
@@ -327,177 +394,124 @@ resource "aws_api_gateway_resource" "admin_mesas" {
   path_part   = "mesas"
 }
 
-
-####Métodos####
-# Metodo POST para "/admin/restaurant"
-resource "aws_api_gateway_method" "post_admin_restaurant" {
-  rest_api_id   = aws_api_gateway_rest_api.my_api.id
-  resource_id   = aws_api_gateway_resource.admin_restaurant.id
-  http_method   = "POST"
-  authorization = "NONE"
-}
-
-# Metodo POST para "/admin/mesas"
-resource "aws_api_gateway_method" "post_admin_mesas" {
-  rest_api_id   = aws_api_gateway_rest_api.my_api.id
-  resource_id   = aws_api_gateway_resource.admin_mesas.id
-  http_method   = "POST"
-  authorization = "NONE"
-}
-
-# Metodo POST para "/reservas"
-resource "aws_api_gateway_method" "cors_method" {
-  rest_api_id   = aws_api_gateway_rest_api.my_api.id
-  resource_id   = aws_api_gateway_resource.reservas.id
-  http_method   = "POST"
-  authorization = "NONE"
-}
-
-resource "aws_api_gateway_method_response" "cors_method_response_200" {
-    rest_api_id   = "${aws_api_gateway_rest_api.my_api.id}"
-    resource_id   = "${aws_api_gateway_resource.reservas.id}"
-    http_method   = "${aws_api_gateway_method.cors_method.http_method}"
-    status_code   = "200"
-    response_parameters = {
-        "method.response.header.Access-Control-Allow-Origin" = true
-    }
-    depends_on = [aws_api_gateway_method.cors_method]
-}
-
-# Integración Lambda para "/reservas"
-resource "aws_api_gateway_integration" "lambda_integration_reservas" {
-  rest_api_id             = aws_api_gateway_rest_api.my_api.id
-  resource_id             = aws_api_gateway_resource.reservas.id
-  http_method             = aws_api_gateway_method.cors_method.http_method
-  integration_http_method = "POST"
-  type                    = "AWS_PROXY"
-  uri                     = aws_lambda_function.crear_reserva_lambda.invoke_arn
-  depends_on    = [aws_api_gateway_method.cors_method, aws_lambda_function.crear_reserva_lambda]
-}
-
-# Permiso para que API Gateway invoque Lambda de reservas
-resource "aws_lambda_permission" "api_gateway_reservas" {
-  statement_id  = "AllowAPIGatewayInvokeReservas"
-  action        = "lambda:InvokeFunction"
-  function_name = aws_lambda_function.crear_reserva_lambda.function_name
-  principal     = "apigateway.amazonaws.com"
-  source_arn    = "${aws_api_gateway_rest_api.my_api.execution_arn}/prod/POST/reservas"
-}
-
-###########CORS############
-
-
-# CORS OPTIONS Method
-resource "aws_api_gateway_method" "options_reservas" {
-  rest_api_id   = aws_api_gateway_rest_api.my_api.id
-  resource_id   = aws_api_gateway_resource.reservas.id
-  http_method   = "OPTIONS"
-  authorization = "NONE"
-}
-
-# CORS OPTIONS Integration
-resource "aws_api_gateway_integration" "options_integration_reservas" {
+# Recurso API Gateway para "/admin/reservas"
+resource "aws_api_gateway_resource" "admin_reservas" {
   rest_api_id = aws_api_gateway_rest_api.my_api.id
-  resource_id = aws_api_gateway_resource.reservas.id
-  http_method = aws_api_gateway_method.options_reservas.http_method
-  type        = "MOCK"
-  request_templates = {
-    "application/json" = jsonencode({
-      statusCode = 200
-    })
+  parent_id   = aws_api_gateway_resource.admin.id
+  path_part   = "reservas"
+}
+
+module "reserva" {
+  source = "./api_gateway_cors"  # Path to your module
+
+  rest_api = {
+    id            = "${aws_api_gateway_rest_api.my_api.id}"
+    execution_arn = "${aws_api_gateway_rest_api.my_api.execution_arn}"
   }
+  resource_id    = aws_api_gateway_resource.reservas.id
+  methods   = {
+    POST = aws_lambda_function.crear_reserva_lambda,
+    GET = aws_lambda_function.obtener_reservas_lambda
+  }  # List of HTTP methods you want to configure
+  path        = "reservas"
+  stage       = "prod"
+  lambdaName  = "Reserva"
+  depends_on = [ 
+   aws_api_gateway_resource.reservas,
+   aws_api_gateway_rest_api.my_api,
+   aws_lambda_function.crear_reserva_lambda,
+   aws_lambda_function.obtener_reservas_lambda
+  ]
 }
 
-# CORS OPTIONS Method Response
-resource "aws_api_gateway_method_response" "options_method_response_reservas" {
-  rest_api_id = aws_api_gateway_rest_api.my_api.id
-  resource_id = aws_api_gateway_resource.reservas.id
-  http_method = aws_api_gateway_method.options_reservas.http_method
-  status_code = "200"
-  
-  response_parameters = {
-    "method.response.header.Access-Control-Allow-Headers" = true,
-    "method.response.header.Access-Control-Allow-Methods" = true,
-    "method.response.header.Access-Control-Allow-Origin"  = true
+module "delete_reserva" {
+  source = "./api_gateway_cors"  # Path to your module
+
+  rest_api = {
+    id            = "${aws_api_gateway_rest_api.my_api.id}"
+    execution_arn = "${aws_api_gateway_rest_api.my_api.execution_arn}"
   }
 
-  response_models = {
-    "application/json" = "Empty"
+  resource_id    = aws_api_gateway_resource.delete_reserva.id
+  methods = {
+    DELETE = aws_lambda_function.admin_crear_mesa_lambda
   }
+  path        = "/reservas/{id}"
+  stage       = "prod"
+  lambdaName  = "DeleteReserva"
 }
 
-# CORS OPTIONS Integration Response
-resource "aws_api_gateway_integration_response" "options_integration_response_reservas" {
-  rest_api_id = aws_api_gateway_rest_api.my_api.id
-  resource_id = aws_api_gateway_resource.reservas.id
-  http_method = aws_api_gateway_method.options_reservas.http_method
-  status_code = aws_api_gateway_method_response.options_method_response_reservas.status_code
-  
-  response_parameters = {
-    "method.response.header.Access-Control-Allow-Headers" = "'Content-Type,X-Amz-Date,Authorization,X-Api-Key,X-Amz-Security-Token'",
-    "method.response.header.Access-Control-Allow-Methods" = "'GET,OPTIONS,POST,PUT'",
-    "method.response.header.Access-Control-Allow-Origin"  = "'*'"
+module "admin_restaurant" {
+  source = "./api_gateway_cors"  # Path to your module
+
+  rest_api = {
+    id            = "${aws_api_gateway_rest_api.my_api.id}"
+    execution_arn = "${aws_api_gateway_rest_api.my_api.execution_arn}"
   }
+
+  resource_id    = aws_api_gateway_resource.admin_restaurant.id
+  methods = {
+    POST = aws_lambda_function.admin_crear_restaurant_lambda
+  }
+  path        = "/admin/restaurant"
+  stage       = "prod"
+  lambdaName  = "CrearRestaurant"
 }
 
-############
+module "admin_mesas" {
+  source = "./api_gateway_cors"  # Path to your module
 
-# Integración Lambda para "/admin/restaurant"
-resource "aws_api_gateway_integration" "lambda_integration_admin_restaurant" {
-  rest_api_id             = aws_api_gateway_rest_api.my_api.id
-  resource_id             = aws_api_gateway_resource.admin_restaurant.id
-  http_method             = aws_api_gateway_method.post_admin_restaurant.http_method
-  integration_http_method = "POST"
-  type                    = "AWS_PROXY"
-  uri                     = aws_lambda_function.crear_restaurant_lambda.invoke_arn
+  rest_api = {
+    id            = "${aws_api_gateway_rest_api.my_api.id}"
+    execution_arn = "${aws_api_gateway_rest_api.my_api.execution_arn}"
+  }
+
+  resource_id    = aws_api_gateway_resource.admin_mesas.id
+  methods = {
+    POST = aws_lambda_function.admin_crear_mesa_lambda
+  }
+  path        = "/admin/mesas"
+  stage       = "prod"
+  lambdaName  = "CrearMesa"
 }
 
-# Permiso para que API Gateway invoque Lambda de restaurant
-resource "aws_lambda_permission" "api_gateway_restaurant" {
-  statement_id  = "AllowAPIGatewayInvokeRestaurant"
-  action        = "lambda:InvokeFunction"
-  function_name = aws_lambda_function.crear_restaurant_lambda.function_name
-  principal     = "apigateway.amazonaws.com"
-  source_arn    = "${aws_api_gateway_rest_api.my_api.execution_arn}/prod/POST/admin/restaurant"
-}
+module "admin_reservas"{
+   source = "./api_gateway_cors"  # Path to your module
 
-# Integración Lambda para "/admin/mesas"
-resource "aws_api_gateway_integration" "lambda_integration_admin_mesas" {
-  rest_api_id             = aws_api_gateway_rest_api.my_api.id
-  resource_id             = aws_api_gateway_resource.admin_mesas.id
-  http_method             = aws_api_gateway_method.post_admin_mesas.http_method
-  integration_http_method = "POST"
-  type                    = "AWS_PROXY"
-  uri                     = aws_lambda_function.crear_mesa_lambda.invoke_arn
-}
+  rest_api = {
+    id            = "${aws_api_gateway_rest_api.my_api.id}"
+    execution_arn = "${aws_api_gateway_rest_api.my_api.execution_arn}"
+  }
 
-# Permiso para que API Gateway invoque la Lambda de mesas
-resource "aws_lambda_permission" "api_gateway_mesas" {
-  statement_id  = "AllowAPIGatewayInvokeMesas"
-  action        = "lambda:InvokeFunction"
-  function_name = aws_lambda_function.crear_mesa_lambda.function_name
-  principal     = "apigateway.amazonaws.com"
-  source_arn    = "${aws_api_gateway_rest_api.my_api.execution_arn}/prod/POST/admin/mesas"
+  resource_id    = aws_api_gateway_resource.admin_reservas.id
+  methods = {
+    GET = aws_lambda_function.admin_obtener_reservas_lambda
+  }
+  path        = "/admin/reservas"
+  stage       = "prod"
+  lambdaName  = "AdminObtenerReservas"
 }
 
 
 # Se asegura que el deployment de las lambda dependa primero de las integraciones con el Api Gateway
 resource "aws_api_gateway_deployment" "my_api_deployment" {
   depends_on = [
-    aws_api_gateway_integration.lambda_integration_reservas,
-    aws_api_gateway_integration.lambda_integration_admin_restaurant,
-    aws_api_gateway_integration.lambda_integration_admin_mesas,
-    aws_api_gateway_integration.options_integration_reservas,
-    aws_api_gateway_integration_response.options_integration_response_reservas
+    module.reserva, 
+    module.admin_mesas,
+    module.admin_reservas,
+    module.admin_restaurant, 
+    module.delete_reserva
   ]
   rest_api_id = aws_api_gateway_rest_api.my_api.id
   stage_name  = "prod"
 
   triggers = {
     redeployment = sha1(jsonencode([
-      aws_api_gateway_resource.reservas,
-      aws_api_gateway_method.options_reservas,
-      aws_api_gateway_integration.options_integration_reservas,
+      module.reserva, 
+      module.admin_mesas,
+      module.admin_reservas,
+      module.admin_restaurant, 
+      module.delete_reserva
     ]))
   }
 
