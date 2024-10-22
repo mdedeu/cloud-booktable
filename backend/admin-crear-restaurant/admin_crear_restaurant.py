@@ -4,65 +4,62 @@ import json
 dynamodb = boto3.resource('dynamodb')
 
 def admin_crear_restaurant(event, context):
-    try:
-        body = json.loads(event.get('body', '{}'))
-        localidad = body.get('localidad')
-        categoria = body.get('categoria')
-        nombre_restaurant = body.get('nombre_restaurant')
-        id_usuario = body.get('id_usuario')
-    except json.JSONDecodeError:
+    # Verificar si todos los campos están presentes y no vacíos
+    campos_vacios = [key for key, value in event.items() if not value]
+
+    if campos_vacios:
         return {
             'statusCode': 400,
-            'body': json.dumps("Error: El cuerpo de la solicitud no es un JSON válido."),
-            'headers': {
-                'Access-Control-Allow-Origin': '*',
-                'Access-Control-Allow-Headers': 'Content-Type,X-Amz-Date,Authorization,X-Api-Key,X-Amz-Security-Token',
-                'Access-Control-Allow-Methods': 'OPTIONS,POST'
-            }
+            'body': json.dumps(f"Error: Todos los campos son requeridos. Los siguientes campos estan vacios o ausentes: {', '.join(campos_vacios)}")
         }
-
-    # Validar los parametros requeridos
-    if not all([localidad, categoria, nombre_restaurant, id_usuario]):
-        return {
-            'statusCode': 400,
-            'body': json.dumps("Error: 'localidad', 'categoria', 'nombre_restaurant' y 'id_usuario' son requeridos."),
-            'headers': {
-                'Access-Control-Allow-Origin': '*',
-                'Access-Control-Allow-Headers': 'Content-Type,X-Amz-Date,Authorization,X-Api-Key,X-Amz-Security-Token',
-                'Access-Control-Allow-Methods': 'OPTIONS,POST'
-            }
-        }
-
-    # Inicializacion de la tabla
+    
+    # Parámetros recibidos del usuario
+    localidad = event['localidad']
+    categoria = event['categoria']
+    nombre_restaurant = event['nombre_restaurant']
+    id_usuario = event['id_usuario']
+    
+    # Inicialización de la tabla
     restaurant_table = dynamodb.Table('RESTAURANTES')
-
-    # Crear el nuevo item de restaurante
+    
+    categoria_restaurant = f"{categoria}#{nombre_restaurant}"
+    
+    # Paso 1: Verificar si ya existe un restaurante con el mismo nombre en la misma localidad y categoría
+    try:
+        response = restaurant_table.get_item(
+            Key={
+                'Localidad': localidad,  # PK
+                'Categoria#Nombre_restaurant': categoria_restaurant  # SK como combinación
+            }
+        )
+        
+        if 'Item' in response:
+            return {
+                'statusCode': 409,
+                'body': json.dumps("Error: Ya existe un restaurante con el mismo nombre en esta localidad y categoria.")
+            }
+    except Exception as e:
+        return {
+            'statusCode': 500,
+            'body': json.dumps(f"Error consultando la tabla RESTAURANTES: {str(e)}")
+        }
+    
+    # Paso 2: Crear el nuevo restaurante
     nuevo_restaurant = {
         'Localidad': localidad,
-        'Categoria_Restaurant': f"{categoria}_{nombre_restaurant}",
+        'Categoria#Nombre_restaurant': categoria_restaurant,
         'ID_Usuario': id_usuario
     }
-
-    # Insertar el nuevo restaurante en la tabla RESTAURANTES
+    
     try:
         restaurant_table.put_item(Item=nuevo_restaurant)
     except Exception as e:
         return {
             'statusCode': 500,
-            'body': json.dumps(f"Error creando el restaurante: {str(e)}"),
-            'headers': {
-                'Access-Control-Allow-Origin': '*',
-                'Access-Control-Allow-Headers': 'Content-Type,X-Amz-Date,Authorization,X-Api-Key,X-Amz-Security-Token',
-                'Access-Control-Allow-Methods': 'OPTIONS,POST'
-            }
+            'body': json.dumps(f"Error creando el restaurante: {str(e)}")
         }
-
+    
     return {
         'statusCode': 201,
-        'body': json.dumps("Restaurante creado exitosamente."),
-        'headers': {
-            'Access-Control-Allow-Origin': '*',
-            'Access-Control-Allow-Methods': '*',
-            'Access-Control-Allow-Headers': '*'
-        }
+        'body': json.dumps("Restaurante creado exitosamente.")
     }

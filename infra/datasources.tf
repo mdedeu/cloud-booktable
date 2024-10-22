@@ -42,3 +42,8 @@ data "archive_file" "frontend" {
   source_dir  = "${path.module}/../frontend"
   output_path = "${path.module}/../frontend/frontend.zip"
 }
+
+####### Datasource para reutilizar el LabRole #######
+data "aws_iam_role" "labrole" {
+  name = "LabRole"  # Replace with your actual IAM role name
+}
