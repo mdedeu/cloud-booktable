@@ -31,7 +31,7 @@ resource "aws_api_gateway_integration" "lambda_integration" {
   rest_api_id             = var.rest_api.id
   resource_id             = var.resource_id
   http_method             = each.key
-  integration_http_method = "POST"  # For AWS_PROXY, this is usually 'POST'
+  integration_http_method = "POST"  
   type                    = "AWS_PROXY"
   uri                     = each.value.invoke_arn
   depends_on              = [aws_api_gateway_method.resource_method]

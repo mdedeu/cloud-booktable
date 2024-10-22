@@ -45,5 +45,5 @@ data "archive_file" "frontend" {
 
 ####### Datasource para reutilizar el LabRole #######
 data "aws_iam_role" "labrole" {
-  name = "LabRole"  # Replace with your actual IAM role name
+  name = "LabRole"
 }

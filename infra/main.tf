@@ -451,12 +451,6 @@ resource "aws_api_gateway_resource" "reservas" {
   path_part   = "reservas"
 }
 
-# Recurso API Gateway para /reservas/_id
-resource "aws_api_gateway_resource" "delete_reserva" {
-  rest_api_id = aws_api_gateway_rest_api.my_api.id
-  parent_id   = aws_api_gateway_resource.reservas.id
-  path_part   = "{id}"
-}
 
 # Recurso API Gateway para "/admin"
 resource "aws_api_gateway_resource" "admin" {
@@ -496,34 +490,17 @@ module "reserva" {
   resource_id    = aws_api_gateway_resource.reservas.id
   methods   = {
     POST = module.my_lambdas.lambda_functions["crear_reserva"],
-    GET = module.my_lambdas.lambda_functions["obtener_reservas"]
-  }  # List of HTTP methods you want to configure
+    GET = module.my_lambdas.lambda_functions["obtener_reservas"],
+    DELETE = module.my_lambdas.lambda_functions["delete_reserva"]
+  }
   path        = "reservas"
   stage       = "prod"
   lambdaName  = "Reserva"
   depends_on = [ 
    aws_api_gateway_resource.reservas,
    aws_api_gateway_rest_api.my_api,
-   module.my_lambdas.lambda_functions["crear_reserva"],
-   module.my_lambdas.lambda_functions["obtener_reservas"]
+   module.my_lambdas.lambda_functions
   ]
-}
-
-module "delete_reserva" {
-  source = "./api_gateway_cors"  # Path to your module
-
-  rest_api = {
-    id            = "${aws_api_gateway_rest_api.my_api.id}"
-    execution_arn = "${aws_api_gateway_rest_api.my_api.execution_arn}"
-  }
-
-  resource_id    = aws_api_gateway_resource.delete_reserva.id
-  methods = {
-    DELETE = module.my_lambdas.lambda_functions["delete_reserva"]
-  }
-  path        = "reservas/{id}"
-  stage       = "prod"
-  lambdaName  = "DeleteReserva"
 }
 
 module "admin_restaurant" {
@@ -541,6 +518,11 @@ module "admin_restaurant" {
   path        = "admin/restaurant"
   stage       = "prod"
   lambdaName  = "CrearRestaurant"
+  depends_on = [ 
+   aws_api_gateway_resource.admin_restaurant,
+   aws_api_gateway_rest_api.my_api,
+   module.my_lambdas.lambda_functions
+  ]
 }
 
 module "admin_mesas" {
@@ -558,6 +540,11 @@ module "admin_mesas" {
   path        = "admin/mesas"
   stage       = "prod"
   lambdaName  = "CrearMesa"
+  depends_on = [ 
+   aws_api_gateway_resource.admin_mesas,
+   aws_api_gateway_rest_api.my_api,
+   module.my_lambdas.lambda_functions
+  ]
 }
 
 module "admin_reservas"{
@@ -575,6 +562,11 @@ module "admin_reservas"{
   path        = "admin/reservas"
   stage       = "prod"
   lambdaName  = "AdminObtenerReservas"
+  depends_on = [ 
+   aws_api_gateway_resource.admin_reservas,
+   aws_api_gateway_rest_api.my_api,
+   module.my_lambdas.lambda_functions
+  ]
 }
 
 
@@ -584,8 +576,7 @@ resource "aws_api_gateway_deployment" "my_api_deployment" {
     module.reserva, 
     module.admin_mesas,
     module.admin_reservas,
-    module.admin_restaurant, 
-    module.delete_reserva
+    module.admin_restaurant
   ]
   rest_api_id = aws_api_gateway_rest_api.my_api.id
   stage_name  = "prod"
@@ -595,8 +586,7 @@ resource "aws_api_gateway_deployment" "my_api_deployment" {
       module.reserva, 
       module.admin_mesas,
       module.admin_reservas,
-      module.admin_restaurant, 
-      module.delete_reserva
+      module.admin_restaurant
     ]))
   }
 

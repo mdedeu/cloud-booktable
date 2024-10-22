@@ -5,8 +5,23 @@ import uuid
 dynamodb = boto3.resource('dynamodb')
 
 def admin_crear_mesa(event, context):
+
+    try:
+        # Analizar el cuerpo de la solicitud
+        body = json.loads(event.get('body', '{}'))
+    except json.JSONDecodeError:
+        return {
+            'statusCode': 400,
+            'body': json.dumps("Error: Cuerpo de la solicitud no es un JSON válido."),
+            'headers': {
+                'Access-Control-Allow-Origin': '*',
+                'Access-Control-Allow-Headers': 'Content-Type,X-Amz-Date,Authorization,X-Api-Key,X-Amz-Security-Token',
+                'Access-Control-Allow-Methods': 'OPTIONS,POST'
+            }
+        }
+    campos_requeridos = ['localidad', 'categoria', 'nombre_restaurant', 'capacidad']    
     # Verificar si todos los campos están presentes y no vacíos
-    campos_vacios = [key for key, value in event.items() if not value]
+    campos_vacios = [campo for campo in campos_requeridos if not body.get(campo)]
 
     if campos_vacios:
         return {
@@ -15,10 +30,10 @@ def admin_crear_mesa(event, context):
         }
         
     # Parámetros recibidos del usuario
-    localidad = event['localidad']
-    categoria = event['categoria']
-    nombre_restaurant = event['nombre_restaurant']
-    capacidad = int(event['capacidad'])
+    localidad = body['localidad']
+    categoria = body['categoria']
+    nombre_restaurant = body['nombre_restaurant']
+    capacidad = int(body['capacidad'])
     
     # Inicialización de las tablas
     mesas_table = dynamodb.Table('MESAS')

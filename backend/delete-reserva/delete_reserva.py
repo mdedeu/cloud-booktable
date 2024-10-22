@@ -6,8 +6,23 @@ from datetime import datetime  # Importa el módulo datetime
 dynamodb = boto3.resource('dynamodb')
 
 def delete_reserva(event, context):
+    try:
+        # Analizar el cuerpo de la solicitud
+        body = json.loads(event.get('body', '{}'))
+    except json.JSONDecodeError:
+        return {
+            'statusCode': 400,
+            'body': json.dumps("Error: Cuerpo de la solicitud no es un JSON válido."),
+            'headers': {
+                'Access-Control-Allow-Origin': '*',
+                'Access-Control-Allow-Headers': 'Content-Type,X-Amz-Date,Authorization,X-Api-Key,X-Amz-Security-Token',
+                'Access-Control-Allow-Methods': 'OPTIONS,POST'
+            }
+        }
+    
     # Verificar si todos los campos están presentes y no vacíos
-    campos_vacios = [key for key, value in event.items() if not value]
+    campos_requeridos = ['user_id', 'datetime']
+    campos_vacios = [campo for campo in campos_requeridos if not body.get(campo)]
 
     if campos_vacios:
         return {
@@ -16,8 +31,8 @@ def delete_reserva(event, context):
         }
         
     # Parámetros recibidos del usuario
-    user_id = event['user_id']
-    fecha_hora = event['datetime']
+    user_id = body['user_id']
+    fecha_hora = body['datetime']
     fecha_hora_timestamp = int(datetime.strptime(fecha_hora, "%Y-%m-%dT%H:%M:%SZ").timestamp()) # Asegúrate de que el formato es el correcto (e.g., ISO 8601)
     
     # Inicialización de las tablas

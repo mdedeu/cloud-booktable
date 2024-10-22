@@ -6,8 +6,26 @@ from datetime import datetime
 dynamodb = boto3.resource('dynamodb')
 
 def obtener_reservas(event, context):
+    try:
+        # Analizar el cuerpo de la solicitud
+        body = json.loads(event.get('body', '{}'))
+    except json.JSONDecodeError:
+        return {
+            'statusCode': 400,
+            'body': json.dumps("Error: Cuerpo de la solicitud no es un JSON válido."),
+            'headers': {
+                'Access-Control-Allow-Origin': '*',
+                'Access-Control-Allow-Headers': 'Content-Type,X-Amz-Date,Authorization,X-Api-Key,X-Amz-Security-Token',
+                'Access-Control-Allow-Methods': 'OPTIONS,POST'
+            }
+        }
+    
+    # Verificar si todos los campos están presentes y no vacíos
+    campos_requeridos = ['user_id']
+    campos_vacios = [campo for campo in campos_requeridos if not body.get(campo)]
+
     # Parámetros recibidos del usuario
-    user_id = event['user_id']
+    user_id = body['user_id']
     
     # Obtener la fecha y hora actual como timestamp
     fecha_hora_actual = int(datetime.now().timestamp())  # Convertir a timestamp

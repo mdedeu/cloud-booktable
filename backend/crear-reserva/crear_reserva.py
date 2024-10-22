@@ -6,25 +6,44 @@ from datetime import datetime  # Importa el módulo datetime
 dynamodb = boto3.resource('dynamodb')
 
 def crear_reserva(event, context):
+    try:
+        # Analizar el cuerpo de la solicitud
+        body = json.loads(event.get('body', '{}'))
+    except json.JSONDecodeError:
+        return {
+            'statusCode': 400,
+            'body': json.dumps("Error: Cuerpo de la solicitud no es un JSON válido."),
+            'headers': {
+                'Access-Control-Allow-Origin': '*',
+                'Access-Control-Allow-Headers': 'Content-Type,X-Amz-Date,Authorization,X-Api-Key,X-Amz-Security-Token',
+                'Access-Control-Allow-Methods': 'OPTIONS,POST'
+            }
+        }
+    
     # Verificar si todos los campos están presentes y no vacíos
-    campos_vacios = [key for key, value in event.items() if not value]
+    campos_requeridos = ['localidad', 'categoria', 'nombre_restaurant', 'datetime', 'comensales', 'user_id', 'user_name', 'email']
+    campos_vacios = [campo for campo in campos_requeridos if not body.get(campo)]
 
     if campos_vacios:
         return {
             'statusCode': 400,
-            'body': json.dumps(f"Error: Todos los campos son requeridos. Los siguientes campos estan vacios o ausentes: {', '.join(campos_vacios)}")
+            'body': json.dumps(f"Error: Todos los campos son requeridos. Los siguientes campos están vacíos o ausentes: {', '.join(campos_vacios)}"),
+            'headers': {
+                'Access-Control-Allow-Origin': '*',
+                'Access-Control-Allow-Headers': 'Content-Type,X-Amz-Date,Authorization,X-Api-Key,X-Amz-Security-Token',
+                'Access-Control-Allow-Methods': 'OPTIONS,POST'
+            }
         }
-    
     # Parámetros recibidos del usuario
-    localidad = event['localidad']
-    categoria = event['categoria']
-    nombre_restaurant = event['nombre_restaurant']
-    fecha_hora = event['datetime']
+    localidad = body['localidad']
+    categoria = body['categoria']
+    nombre_restaurant = body['nombre_restaurant']
+    fecha_hora = body['datetime']
     fecha_hora_timestamp = int(datetime.strptime(fecha_hora, "%Y-%m-%dT%H:%M:%SZ").timestamp()) # Asegúrate de que el formato es el correcto (e.g., ISO 8601)
-    comensales = int(event['comensales'])
-    user_id = event['user_id']
-    user_name = event['user_name']
-    user_email = event['email']
+    comensales = int(body['comensales'])
+    user_id = body['user_id']
+    user_name = body['user_name']
+    user_email = body['email']
     
     # Inicialización de las tablas
     reservas_table = dynamodb.Table('RESERVAS')
