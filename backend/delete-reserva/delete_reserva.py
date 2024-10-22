@@ -37,8 +37,7 @@ def delete_reserva(event, context):
         
     # Parámetros recibidos del usuario
     user_id = body['user_id']
-    fecha_hora = body['datetime']
-    fecha_hora_timestamp = int(datetime.strptime(fecha_hora, "%Y-%m-%dT%H:%M:%SZ").timestamp()) # Asegúrate de que el formato es el correcto (e.g., ISO 8601)
+    fecha_hora_timestamp = int(body['datetime'])
     
     # Inicialización de las tablas
     usuarios_table = dynamodb.Table('USUARIOS')
@@ -91,7 +90,7 @@ def delete_reserva(event, context):
         reservas_table.delete_item(
             Key={
                 'Localidad#Categoria#Nombre_restaurant': clave_compuesta, #PK
-                'Fecha_hora#ID_Mesa': f"{fecha_hora}#{id_mesa}"  #SK
+                'Fecha_hora#ID_Mesa': f"{fecha_hora_timestamp}#{id_mesa}"  #SK
             }
         )
     except Exception as e:

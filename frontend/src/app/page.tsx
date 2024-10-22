@@ -26,7 +26,7 @@ export default function Home() {
     nombre_restaurant: '',
     id_usuario: ''
   });
-  let [deleteReservaData, setDeleteReservaData] = useState({
+  const [deleteReservaData, setDeleteReservaData] = useState({
     user_id: '',
     date: '',
     time: ''

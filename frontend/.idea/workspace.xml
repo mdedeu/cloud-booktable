@@ -5,9 +5,8 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="8eda5742-6782-436c-8f3e-1972753a0452" name="Changes" comment="fix: last version">
-      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/app/page.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/src/app/page.tsx" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/../infra/terraform.tfstate" beforeDir="false" afterPath="$PROJECT_DIR$/../infra/terraform.tfstate" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../infra/terraform.tfstate.backup" beforeDir="false" afterPath="$PROJECT_DIR$/../infra/terraform.tfstate.backup" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -101,7 +100,7 @@
       <workItem from="1727289568422" duration="951000" />
       <workItem from="1729519330482" duration="6228000" />
       <workItem from="1729537327938" duration="1952000" />
-      <workItem from="1729621826071" duration="2546000" />
+      <workItem from="1729621826071" duration="3053000" />
     </task>
     <task id="LOCAL-00001" summary="fix: integrating with backend">
       <option name="closed" value="true" />
