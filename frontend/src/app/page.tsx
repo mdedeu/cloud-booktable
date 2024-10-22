@@ -31,6 +31,12 @@ export default function Home() {
     date: '',
     time: ''
   });
+  const [adminReservaData, setAdminReservaData] = useState({
+    localidad: '',
+    categoria: '',
+    nombre_restaurant: ''
+  });
+
 
   const [result, setResult] = useState('');
 
@@ -140,13 +146,23 @@ export default function Home() {
 
   const handleGetAdminReservas = async () => {
     try {
-      const response = await fetch(`${backendUrl}/admin/reservas`);
+      const queryParams = new URLSearchParams({
+        localidad: adminReservaData.localidad,
+        categoria: adminReservaData.categoria,
+        nombre_restaurant: adminReservaData.nombre_restaurant
+      });
+
+      const response = await fetch(`${backendUrl}/admin/reservas?${queryParams.toString()}`, {
+        method: 'GET',
+        headers: { 'Content-Type': 'application/json' }
+      });
       const data = await response.json();
       setResult(JSON.stringify(data));
     } catch (error) {
       setResult('Error: ' + error.message);
     }
   };
+
 
   return (
       <div className="container mx-auto p-4">
@@ -223,11 +239,33 @@ export default function Home() {
         </div>
 
         <div className="mb-8">
-          <h2 className="text-xl font-semibold mb-2">Get Admin Reservas</h2>
-          <button onClick={handleGetAdminReservas} className="w-full p-2 bg-indigo-500 text-white rounded">Get Admin
-            Reservas
+          <h2 className="text-xl font-semibold mb-2">Get Admin Reservas para hoy</h2>
+          <input
+              type="text"
+              placeholder="Localidad"
+              value={adminReservaData.localidad}
+              onChange={(e) => setAdminReservaData({...adminReservaData, localidad: e.target.value})}
+              className="w-full p-2 border rounded text-black mb-2"
+          />
+          <input
+              type="text"
+              placeholder="Categoría"
+              value={adminReservaData.categoria}
+              onChange={(e) => setAdminReservaData({...adminReservaData, categoria: e.target.value})}
+              className="w-full p-2 border rounded text-black mb-2"
+          />
+          <input
+              type="text"
+              placeholder="Nombre Restaurante"
+              value={adminReservaData.nombre_restaurant}
+              onChange={(e) => setAdminReservaData({...adminReservaData, nombre_restaurant: e.target.value})}
+              className="w-full p-2 border rounded text-black mb-2"
+          />
+          <button onClick={handleGetAdminReservas} className="w-full p-2 bg-indigo-500 text-white rounded">
+            Get Admin Reservas
           </button>
         </div>
+
         <div className="mt-8 mb-8">
           <h2 className="text-xl font-semibold mb-2">Result</h2>
           <pre className="bg-gray-100 p-4 rounded overflow-x-auto text-black">{result}</pre>

@@ -1,7 +1,7 @@
 import boto3
 from boto3.dynamodb.conditions import Key, Attr
 import json
-from datetime import datetime  # Importa el módulo datetime
+from datetime import datetime, timedelta  # Importa el módulo datetime
 
 dynamodb = boto3.resource('dynamodb')
 
@@ -39,6 +39,8 @@ def crear_reserva(event, context):
     categoria = body['categoria']
     nombre_restaurant = body['nombre_restaurant']
     fecha_hora_timestamp = int(body['datetime'])
+    fecha_hora_utc = datetime.utcfromtimestamp(fecha_hora_timestamp)
+    fecha_hora_gmt3 = (fecha_hora_utc - timedelta(hours=3)).isoformat()
     comensales = int(body['comensales'])
     user_id = body['user_id']
     user_name = body['user_name']
@@ -63,12 +65,22 @@ def crear_reserva(event, context):
         if 'Item' in response_usuario:
             return {
                 'statusCode': 400,
-                'body': json.dumps(f"Error: El usuario '{user_name}' ya tiene una reserva en la fecha y hora seleccionadas.")
+                'body': json.dumps(f"Error: El usuario '{user_name}' ya tiene una reserva en la fecha y hora seleccionadas."),
+                'headers': {
+                    'Access-Control-Allow-Origin': '*',
+                    'Access-Control-Allow-Headers': 'Content-Type,X-Amz-Date,Authorization,X-Api-Key,X-Amz-Security-Token',
+                    'Access-Control-Allow-Methods': 'OPTIONS,POST'
+                }
             }
     except Exception as e:
         return {
             'statusCode': 500,
-            'body': json.dumps(f"Error consultando la tabla USUARIOS: {str(e)}")
+            'body': json.dumps(f"Error consultando la tabla USUARIOS: {str(e)}"),
+            'headers': {
+                'Access-Control-Allow-Origin': '*',
+                'Access-Control-Allow-Headers': 'Content-Type,X-Amz-Date,Authorization,X-Api-Key,X-Amz-Security-Token',
+                'Access-Control-Allow-Methods': 'OPTIONS,POST'
+            }
         }
     
     # Paso 1: Verificar si el restaurante existe en la tabla RESTAURANTES
@@ -83,12 +95,23 @@ def crear_reserva(event, context):
         if 'Item' not in response_restaurante:
             return {
                 'statusCode': 404,
-                'body': json.dumps(f"Error: El restaurante '{nombre_restaurant}' con categoria '{categoria}' no existe en la localidad '{localidad}'.")
+                'body': json.dumps(f"Error: El restaurante '{nombre_restaurant}' con categoria '{categoria}' no existe en la localidad '{localidad}'."),
+                'headers': {
+                    'Access-Control-Allow-Origin': '*',
+                    'Access-Control-Allow-Headers': 'Content-Type,X-Amz-Date,Authorization,X-Api-Key,X-Amz-Security-Token',
+                    'Access-Control-Allow-Methods': 'OPTIONS,POST'
+                }
             }
     except Exception as e:
         return {
             'statusCode': 500,
-            'body': json.dumps(f"Error consultando la tabla RESTAURANTES: {str(e)}")
+            'body': json.dumps(f"Error consultando la tabla RESTAURANTES: {str(e)}"),
+            'headers': {
+                'Access-Control-Allow-Origin': '*',
+                'Access-Control-Allow-Headers': 'Content-Type,X-Amz-Date,Authorization,X-Api-Key,X-Amz-Security-Token',
+                'Access-Control-Allow-Methods': 'OPTIONS,POST'
+            }
+
         }
     
     # Paso 2: Hacer query en tabla RESERVAS para obtener mesas ocupadas
@@ -98,12 +121,18 @@ def crear_reserva(event, context):
         # Vamos a consultar todas las reservas que coinciden con la clave primaria y tienen la misma fecha
         response_reservas = reservas_table.query(
             KeyConditionExpression=Key('Localidad#Categoria#Nombre_restaurant').eq(clave_compuesta) & 
-                                   Key('Fecha_hora#ID_Mesa').begins_with(f"{fecha_hora_timestamp}#")
+                                   Key('Fecha_hora#ID_Mesa').begins_with(f"{fecha_hora_gmt3}#")
         )
     except Exception as e:
         return {
             'statusCode': 500,
-            'body': json.dumps(f"Error consultando la tabla RESERVAS: {str(e)}")
+            'body': json.dumps(f"Error consultando la tabla RESERVAS: {str(e)}"),
+            'headers': {
+                'Access-Control-Allow-Origin': '*',
+                'Access-Control-Allow-Headers': 'Content-Type,X-Amz-Date,Authorization,X-Api-Key,X-Amz-Security-Token',
+                'Access-Control-Allow-Methods': 'OPTIONS,POST'
+            }
+
         }
     
     # Paso 3: Extraemos los table_ids ocupados del atributo ID_Mesa
@@ -119,7 +148,12 @@ def crear_reserva(event, context):
     except Exception as e:
         return {
             'statusCode': 500,
-            'body': json.dumps(f"Error consultando la tabla MESAS: {str(e)}")
+            'body': json.dumps(f"Error consultando la tabla MESAS: {str(e)}"),
+            'headers': {
+                'Access-Control-Allow-Origin': '*',
+                'Access-Control-Allow-Headers': 'Content-Type,X-Amz-Date,Authorization,X-Api-Key,X-Amz-Security-Token',
+                'Access-Control-Allow-Methods': 'OPTIONS,POST'
+            }
         }
     
     # Filtrar las mesas ocupadas
@@ -137,8 +171,8 @@ def crear_reserva(event, context):
             reservas_table.put_item(
                 Item={
                     'Localidad#Categoria#Nombre_restaurant': clave_compuesta,
-                    'Fecha_hora#ID_Mesa': f"{fecha_hora_timestamp}#{table_id}",
-                    'Fecha_hora': fecha_hora_timestamp,
+                    'Fecha_hora#ID_Mesa': f"{fecha_hora_gmt3}#{table_id}",
+                    'Fecha_hora': fecha_hora_gmt3,
                     'ID_Mesa': table_id,
                     'Nombre_usuario': user_name,
                     'Mail_usuario': user_email,
