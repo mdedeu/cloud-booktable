@@ -3,7 +3,7 @@ import json
 
 dynamodb = boto3.resource('dynamodb')
 
-def crear_restaurant(event, context):
+def admin_crear_restaurant(event, context):
     # Parámetros recibidos del usuario
     localidad = event['localidad']
     categoria = event['categoria']

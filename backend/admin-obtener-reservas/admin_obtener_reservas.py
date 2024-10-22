@@ -5,7 +5,7 @@ import uuid
 dynamodb = boto3.resource('dynamodb')
 
 
-def crear_mesa(event, context):
+def admin_obtener_reservas(event, context):
     # Parámetros recibidos del usuario
     restaurant_name = event['restaurant_name']
     capacidad = event['capacidad']

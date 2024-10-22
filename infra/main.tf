@@ -314,7 +314,7 @@ resource "aws_lambda_function" "obtener_reservas_lambda" {
   filename         = data.archive_file.obtener_reservas_zip.output_path
   function_name    = "ObtenerReservasLambda"
   role             = var.lambda_execution_role_arn
-  handler          = "obtener_reserva.obtener_reserva"  
+  handler          = "obtener_reservas.obtener_reservas"  
   runtime          = "python3.12"    
   source_code_hash = data.archive_file.obtener_reservas_zip.output_base64sha256
 
@@ -333,7 +333,7 @@ resource "aws_lambda_function" "admin_obtener_reservas_lambda" {
   filename         = data.archive_file.admin_obtener_reservas_zip.output_path
   function_name    = "AdminObtenerReservasLambda"
   role             = var.lambda_execution_role_arn
-  handler          = "admin_obtener_reserva.admin_obtener_reserva"  
+  handler          = "admin_obtener_reservas.admin_obtener_reservas"  
   runtime          = "python3.12"    
   source_code_hash = data.archive_file.admin_obtener_reservas_zip.output_base64sha256
 
