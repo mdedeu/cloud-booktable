@@ -22,5 +22,5 @@ data "archive_file" "crear_restaurant_zip" {
 data "archive_file" "frontend" {
   type        = "zip"
   source_dir  = "${path.module}/../frontend"
-  output_path = "${path.module}/../frontend.zip"
+  output_path = "${path.module}/../frontend/frontend.zip"
 }
