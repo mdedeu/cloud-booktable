@@ -128,7 +128,7 @@ export default function Home() {
           <form onSubmit={handleReservaSubmit} className="space-y-2">
             <input
                 type="text"
-                placeholder="Location"g
+                placeholder="Location"
                 value={reservaData.localidad}
                 onChange={(e) => setReservaData({...reservaData, localidad: e.target.value})}
                 className="w-full p-2 border rounded text-black"
@@ -240,8 +240,8 @@ export default function Home() {
             <input
                 type="text"
                 placeholder="Location"
-                value={reservaData.localidad}
-                onChange={(e) => setReservaData({...reservaData, localidad: e.target.value})}
+                value={mesaData.localidad}
+                onChange={(e) => setMesaData({...mesaData, localidad: e.target.value})}
                 className="w-full p-2 border rounded text-black"
             />
             <input
