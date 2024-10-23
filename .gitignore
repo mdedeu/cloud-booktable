@@ -39,3 +39,6 @@ next-env.d.ts
 .terraform/
 .terraform/
 /infra/.idea
+/infra/terraform.tfstate
+/infra/terraform.tfstate.backup
+/infra/terraform.lock.hcl

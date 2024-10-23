@@ -64,7 +64,7 @@ resource "aws_vpc_endpoint" "dynamodb" {
 #############################
 
 resource "aws_s3_bucket" "frontend_bucket" {
-  bucket = "frontend-bucket-cloudbooktable-marcos"  
+  bucket = "frontend-bucket-cloudbooktable-grupo4"  
 
   tags = {
     Name        = "Frontend Bucket"
