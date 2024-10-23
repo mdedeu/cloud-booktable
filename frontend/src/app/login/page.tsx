@@ -7,6 +7,7 @@ const LoginPage = () => {
     const [email, setEmail] = useState("");
     const [password, setPassword] = useState("");
     const [confirmPassword, setConfirmPassword] = useState("");
+    const [userType, setUserType] = useState("CLIENT"); // Default to CLIENT
     const [isSignUp, setIsSignUp] = useState(false);
     const navigate = useRouter();
 
@@ -37,7 +38,7 @@ const LoginPage = () => {
             return;
         }
         try {
-            await signUp(email, password);
+            await signUp(email, password, userType);
             navigate.push(`/confirm?email=${encodeURIComponent(email)}`);
         } catch (error) {
             alert(`Sign up failed: ${error}`);
@@ -81,17 +82,31 @@ const LoginPage = () => {
                         />
                     </div>
                     {isSignUp && (
-                        <div>
-                            <input
-                                className="w-full p-2 border rounded text-black focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
-                                id="confirmPassword"
-                                type="password"
-                                value={confirmPassword}
-                                onChange={(e) => setConfirmPassword(e.target.value)}
-                                placeholder="Confirm Password"
-                                required
-                            />
-                        </div>
+                        <>
+                            <div>
+                                <input
+                                    className="w-full p-2 border rounded text-black focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+                                    id="confirmPassword"
+                                    type="password"
+                                    value={confirmPassword}
+                                    onChange={(e) => setConfirmPassword(e.target.value)}
+                                    placeholder="Confirm Password"
+                                    required
+                                />
+                            </div>
+                            <div>
+                                <select
+                                    className="w-full p-2 border rounded text-black focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+                                    id="userType"
+                                    value={userType}
+                                    onChange={(e) => setUserType(e.target.value)}
+                                    required
+                                >
+                                    <option value="CLIENT">Client</option>
+                                    <option value="OWNER">Owner</option>
+                                </select>
+                            </div>
+                        </>
                     )}
                     <button
                         type="submit"

@@ -10,19 +10,16 @@ import {
     ListUsersCommand
 } from "@aws-sdk/client-cognito-identity-provider";
 
-
 if (!process.env.NEXT_PUBLIC_AWS_REGION ||
     !process.env.NEXT_PUBLIC_COGNITO_CLIENT_ID ||
     !process.env.NEXT_PUBLIC_COGNITO_USER_POOL_ID) {
     throw new Error('Missing required AWS configuration. Please check your .env.local file.');
 }
 
-// Create the Cognito client with environment variables
 export const cognitoClient = new CognitoIdentityProviderClient({
     region: process.env.NEXT_PUBLIC_AWS_REGION,
 });
 
-// Original auth functions
 export const signIn = async (username: string, password: string) => {
     const params = {
         AuthFlow: "USER_PASSWORD_AUTH",
@@ -53,7 +50,7 @@ export const signIn = async (username: string, password: string) => {
     }
 };
 
-export const signUp = async (email: string, password: string) => {
+export const signUp = async (email: string, password: string, userType: string) => {
     const params = {
         ClientId: process.env.NEXT_PUBLIC_COGNITO_CLIENT_ID,
         Username: email,
@@ -62,6 +59,10 @@ export const signUp = async (email: string, password: string) => {
             {
                 Name: "email",
                 Value: email,
+            },
+            {
+                Name: "custom:userType",
+                Value: userType,
             },
         ],
     };
@@ -76,6 +77,7 @@ export const signUp = async (email: string, password: string) => {
     }
 };
 
+// Rest of the code remains the same...
 export const confirmSignUp = async (username: string, code: string) => {
     const params = {
         ClientId: process.env.NEXT_PUBLIC_COGNITO_CLIENT_ID,
@@ -93,7 +95,6 @@ export const confirmSignUp = async (username: string, code: string) => {
     }
 };
 
-// New functions that use User Pool ID
 export const getUser = async (username: string) => {
     const params = {
         UserPoolId: process.env.NEXT_PUBLIC_COGNITO_USER_POOL_ID,

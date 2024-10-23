@@ -357,6 +357,13 @@ export default function Home() {
           </form>
         </div>
 
+        <div className="mt-8 mb-8">
+          <h2 className="text-xl font-semibold mb-2">Result</h2>
+          <pre className="bg-gray-100 p-4 rounded overflow-x-auto text-black whitespace-pre-wrap">
+          {result}
+        </pre>
+        </div>
+
         <div className="mb-8">
           <h2 className="text-xl font-semibold mb-2">Create Mesa</h2>
           <form onSubmit={handleCreateMesa} className="space-y-2">
@@ -393,6 +400,12 @@ export default function Home() {
             </button>
           </form>
         </div>
+        <div className="mt-8 mb-8">
+          <h2 className="text-xl font-semibold mb-2">Result</h2>
+          <pre className="bg-gray-100 p-4 rounded overflow-x-auto text-black whitespace-pre-wrap">
+          {result}
+        </pre>
+        </div>
 
         <div className="mb-8">
           <h2 className="text-xl font-semibold mb-2">Get Admin Reservas para hoy</h2>
@@ -424,6 +437,12 @@ export default function Home() {
             Get Admin Reservas
           </button>
         </div>
+        <div className="mt-8 mb-8">
+          <h2 className="text-xl font-semibold mb-2">Result</h2>
+          <pre className="bg-gray-100 p-4 rounded overflow-x-auto text-black whitespace-pre-wrap">
+          {result}
+        </pre>
+        </div>
 
         <h2 className="text-2xl font-bold mb-4">Clientes</h2>
         <div className="mb-8">
@@ -449,85 +468,97 @@ export default function Home() {
                 value={reservaData.nombre_restaurant}
                 onChange={(e) => setReservaData({...reservaData, nombre_restaurant: e.target.value})}
                 className="w-full p-2 border rounded text-black"
-          />
-          <input
-            type="date"
-            value={reservaData.date}
-            onChange={(e) => setReservaData({...reservaData, date: e.target.value})}
-            className="w-full p-2 border rounded text-black"
-          />
-          <select
-            value={reservaData.time}
-            onChange={(e) => setReservaData({...reservaData, time: e.target.value})}
-            className="w-full p-2 border rounded text-black"
-          >
-            <option value="">Select Time</option>
-            {timeOptions.map(time => (
-              <option key={time} value={time}>{time}</option>
-            ))}
-          </select>
-          <input
-            type="number"
-            placeholder="Comensales"
-            value={reservaData.comensales}
-            onChange={(e) => setReservaData({...reservaData, comensales: e.target.value})}
-            className="w-full p-2 border rounded text-black"
-          />
-          {/* Name is automatically set from JWT */}
-          <div className="p-2 bg-gray-100 rounded">
-            <p className="text-sm text-gray-600">Reserving as: {userName}</p>
-          </div>
-          <button type="submit" className="w-full p-2 bg-blue-500 text-white rounded hover:bg-blue-600">
-            Create Reserva
-          </button>
-        </form>
-      </div>
-
-      <div className="mb-8">
-        <h2 className="text-xl font-semibold mb-2">My Reservas</h2>
-        <button
-          onClick={handleGetReservas}
-          className="w-full p-2 bg-green-500 text-white rounded hover:bg-green-600"
-        >
-          Get My Reservas
-        </button>
-      </div>
-
-      <div className="mb-8">
-        <h2 className="text-xl font-semibold mb-2">Delete Reserva</h2>
-        <div className="space-y-2">
-          <input
-            type="date"
-            value={deleteReservaData.date}
-            onChange={(e) => setDeleteReservaData({...deleteReservaData, date: e.target.value})}
-            className="w-full p-2 border rounded text-black mb-2"
-          />
-          <select
-            value={deleteReservaData.time}
-            onChange={(e) => setDeleteReservaData({...deleteReservaData, time: e.target.value})}
-            className="w-full p-2 border rounded text-black mb-2"
-          >
-            <option value="">Select Time</option>
-            {timeOptions.map(time => (
-              <option key={time} value={time}>{time}</option>
-            ))}
-          </select>
-          <button
-            onClick={handleDeleteReserva}
-            className="w-full p-2 bg-red-500 text-white rounded hover:bg-red-600"
-          >
-            Delete Reserva
-          </button>
+            />
+            <input
+                type="date"
+                value={reservaData.date}
+                onChange={(e) => setReservaData({...reservaData, date: e.target.value})}
+                className="w-full p-2 border rounded text-black"
+            />
+            <select
+                value={reservaData.time}
+                onChange={(e) => setReservaData({...reservaData, time: e.target.value})}
+                className="w-full p-2 border rounded text-black"
+            >
+              <option value="">Select Time</option>
+              {timeOptions.map(time => (
+                  <option key={time} value={time}>{time}</option>
+              ))}
+            </select>
+            <input
+                type="number"
+                placeholder="Comensales"
+                value={reservaData.comensales}
+                onChange={(e) => setReservaData({...reservaData, comensales: e.target.value})}
+                className="w-full p-2 border rounded text-black"
+            />
+            {/* Name is automatically set from JWT */}
+            <div className="p-2 bg-gray-100 rounded">
+              <p className="text-sm text-gray-600">Reserving as: {userName}</p>
+            </div>
+            <button type="submit" className="w-full p-2 bg-blue-500 text-white rounded hover:bg-blue-600">
+              Create Reserva
+            </button>
+          </form>
         </div>
-      </div>
-
-      {/* Results Section */}
-      <div className="mt-8">
-        <h2 className="text-xl font-semibold mb-2">Result</h2>
-        <pre className="bg-gray-100 p-4 rounded overflow-x-auto text-black whitespace-pre-wrap">
+        <div className="mt-8 mb-8">
+          <h2 className="text-xl font-semibold mb-2">Result</h2>
+          <pre className="bg-gray-100 p-4 rounded overflow-x-auto text-black whitespace-pre-wrap">
           {result}
         </pre>
+        </div>
+
+        <div className="mb-8">
+          <h2 className="text-xl font-semibold mb-2">My Reservas</h2>
+          <button
+              onClick={handleGetReservas}
+              className="w-full p-2 bg-green-500 text-white rounded hover:bg-green-600"
+          >
+            Get My Reservas
+          </button>
+        </div>
+        <div className="mt-8 mb-8">
+          <h2 className="text-xl font-semibold mb-2">Result</h2>
+          <pre className="bg-gray-100 p-4 rounded overflow-x-auto text-black whitespace-pre-wrap">
+          {result}
+        </pre>
+        </div>
+
+        <div className="mb-8">
+          <h2 className="text-xl font-semibold mb-2">Delete Reserva</h2>
+          <div className="space-y-2">
+            <input
+                type="date"
+                value={deleteReservaData.date}
+                onChange={(e) => setDeleteReservaData({...deleteReservaData, date: e.target.value})}
+                className="w-full p-2 border rounded text-black mb-2"
+            />
+            <select
+                value={deleteReservaData.time}
+                onChange={(e) => setDeleteReservaData({...deleteReservaData, time: e.target.value})}
+                className="w-full p-2 border rounded text-black mb-2"
+            >
+              <option value="">Select Time</option>
+              {timeOptions.map(time => (
+                  <option key={time} value={time}>{time}</option>
+              ))}
+            </select>
+            <button
+                onClick={handleDeleteReserva}
+                className="w-full p-2 bg-red-500 text-white rounded hover:bg-red-600"
+            >
+              Delete Reserva
+            </button>
+          </div>
+        </div>
+
+        {/* Results Section */}
+        <div className="mt-8 mb-8">
+          <h2 className="text-xl font-semibold mb-2">Result</h2>
+          <pre className="bg-gray-100 p-4 rounded overflow-x-auto text-black whitespace-pre-wrap">
+          {result}
+        </pre>
+        </div>
       </div>
-    </div>
   );
 }
