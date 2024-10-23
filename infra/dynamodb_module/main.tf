@@ -1,22 +1,22 @@
 resource "aws_dynamodb_table" "tables" {
-  for_each = var.tables  # Use the variable defined in variables.tf
+  for_each = var.tables
 
   name         = each.key
   billing_mode = "PAY_PER_REQUEST"
 
-  # Define the partition key (primary key)
+  # Definimos la partition key
   attribute {
     name = each.value.pk
     type = each.value.pk_data_type
   }
 
-  # Define the sort key
+  # Definimos la sort key
   attribute {
     name = each.value.sk
     type = each.value.sk_data_type
   }
 
-  # Define the key schema
+  # Establecemos los anteriores como hash (pk) y range (sk) keys
   hash_key  = each.value.pk
   range_key = each.value.sk
 }

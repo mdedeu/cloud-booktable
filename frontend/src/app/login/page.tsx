@@ -7,7 +7,7 @@ const LoginPage = () => {
     const [email, setEmail] = useState("");
     const [password, setPassword] = useState("");
     const [confirmPassword, setConfirmPassword] = useState("");
-    const [userType, setUserType] = useState("CLIENT"); // Default to CLIENT
+    const [userType, setUserType] = useState("CLIENT");
     const [isSignUp, setIsSignUp] = useState(false);
     const navigate = useRouter();
 

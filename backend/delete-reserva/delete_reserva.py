@@ -7,7 +7,7 @@ dynamodb = boto3.resource('dynamodb')
 
 def delete_reserva(event, context):
     try:
-        # Analizar el cuerpo de la solicitud
+
         body = json.loads(event.get('body', '{}'))
     except json.JSONDecodeError:
         return {
@@ -35,14 +35,11 @@ def delete_reserva(event, context):
             }
         }
         
-    # Parámetros recibidos del usuario
     user_id = body['user_id']
     fecha_hora_timestamp = int(body['datetime'])
     fecha_hora_utc = datetime.utcfromtimestamp(fecha_hora_timestamp)
     fecha_hora_gmt3 = (fecha_hora_utc - timedelta(hours=3)).isoformat()
 
-    
-    # Inicialización de las tablas
     usuarios_table = dynamodb.Table('USUARIOS')
     reservas_table = dynamodb.Table('RESERVAS')
     
@@ -111,8 +108,8 @@ def delete_reserva(event, context):
     try:
         usuarios_table.delete_item(
             Key={
-                'ID_Usuario': user_id,  # PK
-                'Fecha_hora': fecha_hora_timestamp  # SK
+                'ID_Usuario': user_id, 
+                'Fecha_hora': fecha_hora_timestamp 
             }
         )
     except Exception as e:

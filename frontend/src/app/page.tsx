@@ -52,7 +52,6 @@ export default function Home() {
     '13:00', '14:00', '15:00', '19:00', '20:00', '21:00', '22:00', '23:00'
   ];
 
-  // Function to decode JWT
   const decodeJWT = (token: string) => {
     try {
       return JSON.parse(atob(token.split('.')[1]));
@@ -63,7 +62,6 @@ export default function Home() {
   };
 
   useEffect(() => {
-    // Check authentication and decode token
     const token = sessionStorage.getItem('idToken');
     if (!token) {
       router.push('/login');
@@ -78,10 +76,8 @@ export default function Home() {
     }
     if (decodedToken && decodedToken.email) {
       setUserEmail(decodedToken.email);
-      // You might also have name in the token
       setUserName(decodedToken.email);
 
-      // Pre-fill user data in all relevant places
       setReservaData(prev => ({
         ...prev,
         user_id: decodedToken.email,
@@ -264,7 +260,6 @@ export default function Home() {
                 onChange={(e) => setReservaData({...reservaData, comensales: e.target.value})}
                 className="w-full p-2 border rounded text-black"
             />
-            {/* Name is automatically set from JWT */}
             <div className="p-2 bg-gray-100 rounded">
               <p className="text-sm text-gray-600">Reserving as: {userName}</p>
             </div>
@@ -324,7 +319,6 @@ export default function Home() {
           </div>
         </div>
 
-        {/* Results Section */}
         <div className="mt-8 mb-8">
           <h2 className="text-xl font-semibold mb-2">Result</h2>
           <pre className="bg-gray-100 p-4 rounded overflow-x-auto text-black whitespace-pre-wrap">

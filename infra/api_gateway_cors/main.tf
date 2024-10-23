@@ -1,10 +1,10 @@
-# Generate a set from the list of HTTP methods to remove duplicates
+# Set de la lista de metodos HTTP para eliminar duplicados
 locals {
   http_methods_set = toset(keys(var.methods))
   allowed_methods = join(",", concat(keys(var.methods), ["OPTIONS"]))
 }
 
-# Create API Gateway methods for each HTTP method
+# Crear metodo de API Gateway para cada metodo respectivamente
 resource "aws_api_gateway_method" "resource_method" {
   for_each      = local.http_methods_set
   rest_api_id   = var.rest_api.id
@@ -25,7 +25,7 @@ resource "aws_api_gateway_method_response" "cors_method_response_200" {
   depends_on = [aws_api_gateway_method.resource_method]
 }
 
-# Lambda Integration for each method
+# Integrar la lambda con el metodo
 resource "aws_api_gateway_integration" "lambda_integration" {
   for_each                = var.methods
   rest_api_id             = var.rest_api.id
@@ -37,7 +37,7 @@ resource "aws_api_gateway_integration" "lambda_integration" {
   depends_on              = [aws_api_gateway_method.resource_method]
 }
 
-# Lambda Permission for each method
+# Darle permiso al API Gateway para llamar a la lambda
 resource "aws_lambda_permission" "api_gateway_permission" {
   for_each      = var.methods
   statement_id  = "AllowAPIGatewayInvoke${var.lambdaName}_${each.key}"
@@ -47,10 +47,9 @@ resource "aws_lambda_permission" "api_gateway_permission" {
   source_arn    = "${var.rest_api.execution_arn}/${var.stage}/${each.key}${var.path != "" ? "/${var.path}" : ""}"
 }
 
-########### CORS Configuration ###########
+########### Configuracion del CORS ###########
 
-
-# CORS OPTIONS Method
+# Metodo OPTIONS
 resource "aws_api_gateway_method" "options_lambda" {
   rest_api_id   = var.rest_api.id
   resource_id   = var.resource_id
@@ -58,7 +57,7 @@ resource "aws_api_gateway_method" "options_lambda" {
   authorization = "NONE"
 }
 
-# CORS OPTIONS Integration
+# Integracion metodo OPTIONS
 resource "aws_api_gateway_integration" "options_integration_lambda" {
   rest_api_id = var.rest_api.id
   resource_id = var.resource_id
@@ -69,7 +68,7 @@ resource "aws_api_gateway_integration" "options_integration_lambda" {
   }
 }
 
-# CORS OPTIONS Method Response
+# Respuesta metodo OPTIONS
 resource "aws_api_gateway_method_response" "options_method_response" {
   rest_api_id = var.rest_api.id
   resource_id = var.resource_id
@@ -87,7 +86,7 @@ resource "aws_api_gateway_method_response" "options_method_response" {
   }
 }
 
-# CORS OPTIONS Integration Response
+# Integracion de la respuesta del metodo OPTIONS
 resource "aws_api_gateway_integration_response" "options_integration_response" {
   rest_api_id  = var.rest_api.id
   resource_id  = var.resource_id

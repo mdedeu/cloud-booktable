@@ -1,5 +1,5 @@
 variable "rest_api" {
-  description = "The API Gateway Rest API object, including 'id' and 'execution_arn'."
+  description = "REST API del API Gateway con su id y arn"
   type = object({
     id            = string
     execution_arn = string
@@ -7,26 +7,26 @@ variable "rest_api" {
 }
 
 variable "resource_id" {
-  description = "The ID of the API Gateway resource."
+  description = "ID del recurso del API Gateway"
   type        = string
 }
 
 variable "methods" {
-  description = "Map of HTTP methods to Lambda function objects."
+  description = "Mapa de los metodos HTTP a las funciones lambda"
   type = map(any)
 }
 
 variable "path" {
-  description = "The path of the API Gateway resource (e.g., 'admin/restaurant')."
+  description = "Path del recurso del API Gateway"
   type        = string
 }
 
 variable "stage" {
-  description = "The stage name of the API Gateway (e.g., 'prod')."
+  description = "Nombre del stage para API Gateway"
   type        = string
 }
 
 variable "lambdaName" {
-  description = "The name of the Lambda function."
+  description = "Nombre de la funcion Lambda"
   type        = string
 }

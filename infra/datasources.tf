@@ -47,3 +47,6 @@ data "archive_file" "frontend" {
 data "aws_iam_role" "labrole" {
   name = "LabRole"
 }
+
+####### Region actual ############
+data "aws_region" "current" {}

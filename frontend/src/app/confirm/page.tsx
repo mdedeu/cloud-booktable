@@ -3,7 +3,7 @@ import { useState, useEffect, Suspense } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { confirmSignUp } from "@/lib/authService";
 
-// Separate component for the form content
+
 const ConfirmForm = () => {
     const router = useRouter();
     const searchParams = useSearchParams();
@@ -11,16 +11,14 @@ const ConfirmForm = () => {
     const [confirmationCode, setConfirmationCode] = useState("");
 
     useEffect(() => {
-        // Try to get email from URL params first
         const urlEmail = searchParams.get('email');
         if (urlEmail) {
             setEmail(urlEmail);
         } else {
-            // Fallback to session storage if email was stored there
             const storedEmail = sessionStorage.getItem('tempEmail');
             if (storedEmail) {
                 setEmail(storedEmail);
-                sessionStorage.removeItem('tempEmail'); // Clean up after getting the email
+                sessionStorage.removeItem('tempEmail');
             }
         }
     }, [searchParams]);
@@ -82,14 +80,12 @@ const ConfirmForm = () => {
     );
 };
 
-// Loading component
 const Loading = () => (
     <div className="min-h-screen flex items-center justify-center bg-gray-50">
         <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-indigo-600"></div>
     </div>
 );
 
-// Main component wrapped with Suspense
 const ConfirmUserPage = () => {
     return (
         <Suspense fallback={<Loading />}>

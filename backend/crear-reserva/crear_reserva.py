@@ -1,7 +1,7 @@
 import boto3
 from boto3.dynamodb.conditions import Key, Attr
 import json
-from datetime import datetime, timedelta  # Importa el módulo datetime
+from datetime import datetime, timedelta
 
 dynamodb = boto3.resource('dynamodb')
 
@@ -34,7 +34,7 @@ def crear_reserva(event, context):
                 'Access-Control-Allow-Methods': 'OPTIONS,POST'
             }
         }
-    # Parámetros recibidos del usuario
+ 
     localidad = body['localidad']
     categoria = body['categoria']
     nombre_restaurant = body['nombre_restaurant']
@@ -46,7 +46,7 @@ def crear_reserva(event, context):
     user_name = body['user_name']
     user_email = body['email']
     
-    # Inicialización de las tablas
+
     reservas_table = dynamodb.Table('RESERVAS')
     mesas_table = dynamodb.Table('MESAS')
     usuarios_table = dynamodb.Table('USUARIOS')
@@ -56,8 +56,8 @@ def crear_reserva(event, context):
     try:
         response_usuario = usuarios_table.get_item(
             Key={
-                'ID_Usuario': user_id,  # PK
-                'Fecha_hora': fecha_hora_timestamp     # SK
+                'ID_Usuario': user_id,
+                'Fecha_hora': fecha_hora_timestamp
             }
         )
         
@@ -87,8 +87,8 @@ def crear_reserva(event, context):
     try:
         response_restaurante = restaurantes_table.get_item(
             Key={
-                'Localidad': localidad,                # PK
-                'Categoria#Nombre_restaurant': f"{categoria}#{nombre_restaurant}"     # SK como combinación
+                'Localidad': localidad,            
+                'Categoria#Nombre_restaurant': f"{categoria}#{nombre_restaurant}"  
             }
         )
         # Verificar si existe el restaurante

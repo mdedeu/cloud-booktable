@@ -50,7 +50,6 @@ export default function Home() {
     const [result, setResult] = useState('');
     const router = useRouter();
 
-    // Function to decode JWT
     const decodeJWT = (token: string) => {
         try {
             return JSON.parse(atob(token.split('.')[1]));
@@ -61,7 +60,6 @@ export default function Home() {
     };
 
     useEffect(() => {
-        // Check authentication and decode token
         const token = sessionStorage.getItem('idToken');
         if (!token) {
             router.push('/login');
@@ -76,7 +74,6 @@ export default function Home() {
         }
         if (decodedToken && decodedToken.email) {
             setUserEmail(decodedToken.email);
-            // You might also have name in the token
 
             setRestaurantData(prev => ({
                 ...prev,

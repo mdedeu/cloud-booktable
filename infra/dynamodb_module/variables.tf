@@ -1,9 +1,9 @@
 variable "tables" {
-  description = "Map of DynamoDB tables to create."
+  description = "Mapa de las tablas de DyanmoDB a crear"
   type = map(object({
-    pk           = string  # Partition key
-    pk_data_type = string  # Partition key data type
-    sk           = string  # Sort key
-    sk_data_type = string  # Sort key data type
+    pk           = string 
+    pk_data_type = string  
+    sk           = string 
+    sk_data_type = string 
   }))
 }

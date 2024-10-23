@@ -77,7 +77,6 @@ export const signUp = async (email: string, password: string, userType: string) 
     }
 };
 
-// Rest of the code remains the same...
 export const confirmSignUp = async (username: string, code: string) => {
     const params = {
         ClientId: process.env.NEXT_PUBLIC_COGNITO_CLIENT_ID,

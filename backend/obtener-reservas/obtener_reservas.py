@@ -8,7 +8,6 @@ dynamodb = boto3.resource('dynamodb')
 def obtener_reservas(event, context):
     params = event.get('queryStringParameters')
     
-    # Verificar si todos los campos están presentes y no vacíos
     campos_requeridos = ['user_id']
     campos_vacios = [campo for campo in campos_requeridos if not params.get(campo)]
     if campos_vacios:
@@ -23,13 +22,11 @@ def obtener_reservas(event, context):
             }
         }
 
-    # Parámetros recibidos del usuario
     user_id = params.get('user_id')
     
     # Obtener la fecha y hora actual como timestamp
-    fecha_hora_actual = int(datetime.now().timestamp())  # Convertir a timestamp
+    fecha_hora_actual = int(datetime.now().timestamp()) 
     
-    # Inicialización de la tabla
     usuarios_table = dynamodb.Table('USUARIOS')
     
     # Paso 1: Hacer query en tabla USUARIOS
