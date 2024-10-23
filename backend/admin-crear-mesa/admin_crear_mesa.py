@@ -52,7 +52,7 @@ def admin_crear_mesa(event, context):
             KeyConditionExpression =Key('Localidad').eq(localidad) & Key('Categoria#Nombre_restaurant').eq(f"{categoria}#{nombre_restaurant}"),
             FilterExpression=Attr('ID_Usuario').eq(id_usuario))
 
-        if 'Item' not in response_restaurante:
+        if not response_restaurante['Items']:
             return {
                 'statusCode': 404,
                 'body': json.dumps(f"Error: El restaurante '{nombre_restaurant}' con categoria '{categoria}' no existe en la localidad '{localidad}' para este usuario."),

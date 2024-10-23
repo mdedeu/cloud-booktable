@@ -47,12 +47,12 @@ def admin_obtener_reservas(event, context):
 
         # Step 0: Verify that the restaurant exists in the RESTAURANTES table and belongs to user
         try:
-            response_restaurante = restaurantes_table.get_item(
+            response_restaurante = restaurantes_table.query(
                 KeyConditionExpression=Key('Localidad').eq(localidad) & Key('Categoria#Nombre_restaurant').eq(
                     f"{categoria}#{nombre_restaurant}"),
                 FilterExpression=Attr('ID_Usuario').eq(id_usuario))
 
-            if 'Item' not in response_restaurante:
+            if not response_restaurante['Items']:
                 return {
                     'statusCode': 404,
                     'body': json.dumps(
