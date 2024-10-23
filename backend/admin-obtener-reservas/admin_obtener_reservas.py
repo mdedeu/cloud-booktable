@@ -1,7 +1,7 @@
 import boto3
 import json
 from datetime import datetime, timedelta
-from boto3.dynamodb.conditions import Key
+from boto3.dynamodb.conditions import Key, Attr
 import boto3.dynamodb.types
 
 
@@ -13,7 +13,7 @@ def admin_obtener_reservas(event, context):
         # Access query parameters with safe fallback
         params = event.get('queryStringParameters', {}) or {}
 
-        campos_requeridos = ['localidad', 'categoria', 'nombre_restaurant']
+        campos_requeridos = ['localidad', 'categoria', 'nombre_restaurant', 'id_usuario']
         # Verify that all required fields are present and not empty
         campos_vacios = [campo for campo in campos_requeridos if not params.get(campo)]
 
@@ -33,6 +33,7 @@ def admin_obtener_reservas(event, context):
         localidad = params.get('localidad')
         categoria = params.get('categoria')
         nombre_restaurant = params.get('nombre_restaurant')
+        id_usuario = params.get('id_usuario')
 
         # Construct the partition key
         clave_compuesta = f'{localidad}#{categoria}#{nombre_restaurant}'
@@ -42,6 +43,36 @@ def admin_obtener_reservas(event, context):
 
         # Initialize the table
         reservas_table = dynamodb.Table('RESERVAS')
+        restaurantes_table = dynamodb.Table('RESTAURANTES')
+
+        # Step 0: Verify that the restaurant exists in the RESTAURANTES table and belongs to user
+        try:
+            response_restaurante = restaurantes_table.get_item(
+                KeyConditionExpression=Key('Localidad').eq(localidad) & Key('Categoria#Nombre_restaurant').eq(
+                    f"{categoria}#{nombre_restaurant}"),
+                FilterExpression=Attr('ID_Usuario').eq(id_usuario))
+
+            if 'Item' not in response_restaurante:
+                return {
+                    'statusCode': 404,
+                    'body': json.dumps(
+                        f"Error: El restaurante '{nombre_restaurant}' con categoria '{categoria}' no existe en la localidad '{localidad}' para este usuario."),
+                    'headers': {
+                        'Access-Control-Allow-Origin': '*',
+                        'Access-Control-Allow-Headers': 'Content-Type,X-Amz-Date,Authorization,X-Api-Key,X-Amz-Security-Token',
+                        'Access-Control-Allow-Methods': 'OPTIONS,POST'
+                    }
+                }
+        except Exception as e:
+            return {
+                'statusCode': 500,
+                'body': json.dumps(f"Error consultando la tabla RESTAURANTES: {str(e)}"),
+                'headers': {
+                    'Access-Control-Allow-Origin': '*',
+                    'Access-Control-Allow-Headers': 'Content-Type,X-Amz-Date,Authorization,X-Api-Key,X-Amz-Security-Token',
+                    'Access-Control-Allow-Methods': 'OPTIONS,POST'
+                }
+            }
 
         # Step 1: Perform the query
         try:

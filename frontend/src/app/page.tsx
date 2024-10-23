@@ -14,30 +14,10 @@ interface ReservaData {
   email: string;
 }
 
-interface MesaData {
-  categoria: string;
-  localidad: string;
-  nombre_restaurant: string;
-  capacidad: string;
-}
-
-interface RestaurantData {
-  localidad: string;
-  categoria: string;
-  nombre_restaurant: string;
-  id_usuario: string;
-}
-
 interface DeleteReservaData {
   user_id: string;
   date: string;
   time: string;
-}
-
-interface AdminReservaData {
-  localidad: string;
-  categoria: string;
-  nombre_restaurant: string;
 }
 
 export default function Home() {
@@ -57,19 +37,6 @@ export default function Home() {
     email: ''
   });
 
-  const [mesaData, setMesaData] = useState<MesaData>({
-    categoria: '',
-    localidad: '',
-    nombre_restaurant: '',
-    capacidad: ''
-  });
-
-  const [restaurantData, setRestaurantData] = useState<RestaurantData>({
-    localidad: '',
-    categoria: '',
-    nombre_restaurant: '',
-    id_usuario: ''
-  });
 
   const [deleteReservaData, setDeleteReservaData] = useState<DeleteReservaData>({
     user_id: '',
@@ -77,11 +44,6 @@ export default function Home() {
     time: ''
   });
 
-  const [adminReservaData, setAdminReservaData] = useState<AdminReservaData>({
-    localidad: '',
-    categoria: '',
-    nombre_restaurant: ''
-  });
 
   const [result, setResult] = useState('');
   const router = useRouter();
@@ -109,6 +71,11 @@ export default function Home() {
     }
 
     const decodedToken = decodeJWT(token);
+    const userType = decodedToken['custom:userType'];
+    if(userType == 'OWNER') {
+        router.push('/owner');
+        return
+    }
     if (decodedToken && decodedToken.email) {
       setUserEmail(decodedToken.email);
       // You might also have name in the token
@@ -120,11 +87,6 @@ export default function Home() {
         user_id: decodedToken.email,
         email: decodedToken.email,
         user_name: decodedToken.email
-      }));
-
-      setRestaurantData(prev => ({
-        ...prev,
-        id_usuario: decodedToken.email
       }));
 
       setDeleteReservaData(prev => ({
@@ -237,78 +199,6 @@ export default function Home() {
     }
   };
 
-  const handleCreateRestaurant = async (e: React.FormEvent) => {
-    e.preventDefault();
-    try {
-      const restaurantPayload = {
-        ...restaurantData,
-        id_usuario: userEmail
-      };
-
-      const response = await fetch(`${backendUrl}/admin/restaurant`, {
-        method: 'POST',
-        headers: getAuthHeaders(),
-        body: JSON.stringify(restaurantPayload)
-      });
-
-      if (response.status === 401) {
-        handleLogout();
-        return;
-      }
-
-      const data = await response.json();
-      setResult(JSON.stringify(data, null, 2));
-    } catch (error) {
-      setResult('Error: ' + (error as Error).message);
-    }
-  };
-
-  const handleCreateMesa = async (e: React.FormEvent) => {
-    e.preventDefault();
-    try {
-      const response = await fetch(`${backendUrl}/admin/mesas`, {
-        method: 'POST',
-        headers: getAuthHeaders(),
-        body: JSON.stringify(mesaData)
-      });
-
-      if (response.status === 401) {
-        handleLogout();
-        return;
-      }
-
-      const data = await response.json();
-      setResult(JSON.stringify(data, null, 2));
-    } catch (error) {
-      setResult('Error: ' + (error as Error).message);
-    }
-  };
-
-  const handleGetAdminReservas = async () => {
-    try {
-      const queryParams = new URLSearchParams({
-        localidad: adminReservaData.localidad,
-        categoria: adminReservaData.categoria,
-        nombre_restaurant: adminReservaData.nombre_restaurant
-      });
-
-      const response = await fetch(`${backendUrl}/admin/reservas?${queryParams.toString()}`, {
-        method: 'GET',
-        headers: getAuthHeaders()
-      });
-
-      if (response.status === 401) {
-        handleLogout();
-        return;
-      }
-
-      const data = await response.json();
-      setResult(JSON.stringify(data, null, 2));
-    } catch (error) {
-      setResult('Error: ' + (error as Error).message);
-    }
-  };
-
   return (
       <div className="container mx-auto p-4">
         <div className="flex justify-between items-center mb-4">
@@ -324,124 +214,6 @@ export default function Home() {
           >
             Logout
           </button>
-        </div>
-
-        <h2 className="text-2xl font-bold mb-4">Restaurant OWNER</h2>
-        <div className="mb-8">
-          <h2 className="text-xl font-semibold mb-2">Create Restaurant</h2>
-          <form onSubmit={handleCreateRestaurant} className="space-y-2">
-            <input
-                type="text"
-                placeholder="Localidad"
-                value={restaurantData.localidad}
-                onChange={(e) => setRestaurantData({...restaurantData, localidad: e.target.value})}
-                className="w-full p-2 border rounded text-black"
-            />
-            <input
-                type="text"
-                placeholder="Categoria"
-                value={restaurantData.categoria}
-                onChange={(e) => setRestaurantData({...restaurantData, categoria: e.target.value})}
-                className="w-full p-2 border rounded text-black"
-            />
-            <input
-                type="text"
-                placeholder="Nombre Restaurant"
-                value={restaurantData.nombre_restaurant}
-                onChange={(e) => setRestaurantData({...restaurantData, nombre_restaurant: e.target.value})}
-                className="w-full p-2 border rounded text-black"
-            />
-            <button type="submit" className="w-full p-2 bg-purple-500 text-white rounded">
-              Create Restaurant
-            </button>
-          </form>
-        </div>
-
-        <div className="mt-8 mb-8">
-          <h2 className="text-xl font-semibold mb-2">Result</h2>
-          <pre className="bg-gray-100 p-4 rounded overflow-x-auto text-black whitespace-pre-wrap">
-          {result}
-        </pre>
-        </div>
-
-        <div className="mb-8">
-          <h2 className="text-xl font-semibold mb-2">Create Mesa</h2>
-          <form onSubmit={handleCreateMesa} className="space-y-2">
-            <input
-                type="text"
-                placeholder="Location"
-                value={mesaData.localidad}
-                onChange={(e) => setMesaData({...mesaData, localidad: e.target.value})}
-                className="w-full p-2 border rounded text-black"
-            />
-            <input
-                type="text"
-                placeholder="Categoría"
-                value={mesaData.categoria}
-                onChange={(e) => setMesaData({...mesaData, categoria: e.target.value})}
-                className="w-full p-2 border rounded text-black"
-            />
-            <input
-                type="text"
-                placeholder="Restaurant Name"
-                value={mesaData.nombre_restaurant}
-                onChange={(e) => setMesaData({...mesaData, nombre_restaurant: e.target.value})}
-                className="w-full p-2 border rounded text-black"
-            />
-            <input
-                type="number"
-                placeholder="Capacidad"
-                value={mesaData.capacidad}
-                onChange={(e) => setMesaData({...mesaData, capacidad: e.target.value})}
-                className="w-full p-2 border rounded text-black"
-            />
-            <button type="submit" className="w-full p-2 bg-yellow-500 text-white rounded">
-              Create Mesa
-            </button>
-          </form>
-        </div>
-        <div className="mt-8 mb-8">
-          <h2 className="text-xl font-semibold mb-2">Result</h2>
-          <pre className="bg-gray-100 p-4 rounded overflow-x-auto text-black whitespace-pre-wrap">
-          {result}
-        </pre>
-        </div>
-
-        <div className="mb-8">
-          <h2 className="text-xl font-semibold mb-2">Get Admin Reservas para hoy</h2>
-          <input
-              type="text"
-              placeholder="Localidad"
-              value={adminReservaData.localidad}
-              onChange={(e) => setAdminReservaData({...adminReservaData, localidad: e.target.value})}
-              className="w-full p-2 border rounded text-black mb-2"
-          />
-          <input
-              type="text"
-              placeholder="Categoría"
-              value={adminReservaData.categoria}
-              onChange={(e) => setAdminReservaData({...adminReservaData, categoria: e.target.value})}
-              className="w-full p-2 border rounded text-black mb-2"
-          />
-          <input
-              type="text"
-              placeholder="Nombre Restaurante"
-              value={adminReservaData.nombre_restaurant}
-              onChange={(e) => setAdminReservaData({...adminReservaData, nombre_restaurant: e.target.value})}
-              className="w-full p-2 border rounded text-black mb-2"
-          />
-          <button
-              onClick={handleGetAdminReservas}
-              className="w-full p-2 bg-indigo-500 text-white rounded"
-          >
-            Get Admin Reservas
-          </button>
-        </div>
-        <div className="mt-8 mb-8">
-          <h2 className="text-xl font-semibold mb-2">Result</h2>
-          <pre className="bg-gray-100 p-4 rounded overflow-x-auto text-black whitespace-pre-wrap">
-          {result}
-        </pre>
         </div>
 
         <h2 className="text-2xl font-bold mb-4">Clientes</h2>

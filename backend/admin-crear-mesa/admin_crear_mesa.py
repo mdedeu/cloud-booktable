@@ -1,6 +1,7 @@
 import boto3
 import json
 import uuid
+from boto3.dynamodb.conditions import Key, Attr
 
 dynamodb = boto3.resource('dynamodb')
 
@@ -39,6 +40,7 @@ def admin_crear_mesa(event, context):
     categoria = body['categoria']
     nombre_restaurant = body['nombre_restaurant']
     capacidad = int(body['capacidad'])
+    id_usuario = body['id_usuario']
     
     # Inicialización de las tablas
     mesas_table = dynamodb.Table('MESAS')
@@ -47,16 +49,13 @@ def admin_crear_mesa(event, context):
     # Paso 1: Verificar si el restaurante existe en la tabla RESTAURANTES
     try:
         response_restaurante = restaurantes_table.get_item(
-            Key={
-                'Localidad': localidad,                # PK
-                'Categoria#Nombre_restaurant': f"{categoria}#{nombre_restaurant}"     # SK como combinación
-            }
-        )
-        # Verificar si existe el restaurante
+            KeyConditionExpression =Key('Localidad').eq(localidad) & Key('Categoria#Nombre_restaurant').eq(f"{categoria}#{nombre_restaurant}"),
+            FilterExpression=Attr('ID_Usuario').eq(id_usuario))
+
         if 'Item' not in response_restaurante:
             return {
                 'statusCode': 404,
-                'body': json.dumps(f"Error: El restaurante '{nombre_restaurant}' con categoria '{categoria}' no existe en la localidad '{localidad}'."),
+                'body': json.dumps(f"Error: El restaurante '{nombre_restaurant}' con categoria '{categoria}' no existe en la localidad '{localidad}' para este usuario."),
                 'headers': {
                     'Access-Control-Allow-Origin': '*',
                     'Access-Control-Allow-Headers': 'Content-Type,X-Amz-Date,Authorization,X-Api-Key,X-Amz-Security-Token',
