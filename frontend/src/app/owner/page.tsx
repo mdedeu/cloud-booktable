@@ -30,7 +30,8 @@ export default function Home() {
         categoria: '',
         localidad: '',
         nombre_restaurant: '',
-        capacidad: ''
+        capacidad: '',
+        id_usuario: ''
     });
 
     const [restaurantData, setRestaurantData] = useState<RestaurantData>({
@@ -81,6 +82,9 @@ export default function Home() {
                 ...prev,
                 id_usuario: decodedToken.email
             }));
+
+            setMesaData({...mesaData, id_usuario: decodedToken.email});
+
         }
 
         if (process.env.NEXT_PUBLIC_BACKEND_URL) {

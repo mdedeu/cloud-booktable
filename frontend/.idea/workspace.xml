@@ -5,8 +5,7 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="8eda5742-6782-436c-8f3e-1972753a0452" name="Changes" comment="fix: last version">
-      <change beforePath="$PROJECT_DIR$/.env" beforeDir="false" afterPath="$PROJECT_DIR$/.env" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/app/owner/page.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/src/app/owner/page.tsx" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -59,7 +58,7 @@
     "vue.rearranger.settings.migration": "true"
   }
 }]]></component>
-  <component name="RunManager" selected="npm.start">
+  <component name="RunManager" selected="npm.dev">
     <configuration name="dev" type="js.build_tools.npm" nameIsGenerated="true">
       <package-json value="$PROJECT_DIR$/package.json" />
       <command value="run" />
@@ -123,7 +122,7 @@
       <workItem from="1729629076396" duration="2472000" />
       <workItem from="1729639026315" duration="887000" />
       <workItem from="1729642367639" duration="2680000" />
-      <workItem from="1729693306297" duration="1963000" />
+      <workItem from="1729693306297" duration="2898000" />
     </task>
     <task id="LOCAL-00001" summary="fix: integrating with backend">
       <option name="closed" value="true" />

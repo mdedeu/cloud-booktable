@@ -20,7 +20,7 @@ def admin_crear_mesa(event, context):
                 'Access-Control-Allow-Methods': 'OPTIONS,POST'
             }
         }
-    campos_requeridos = ['localidad', 'categoria', 'nombre_restaurant', 'capacidad']    
+    campos_requeridos = ['localidad', 'categoria', 'nombre_restaurant', 'capacidad', 'id_usuario']
     # Verificar si todos los campos están presentes y no vacíos
     campos_vacios = [campo for campo in campos_requeridos if not body.get(campo)]
 
@@ -48,7 +48,7 @@ def admin_crear_mesa(event, context):
     
     # Paso 1: Verificar si el restaurante existe en la tabla RESTAURANTES
     try:
-        response_restaurante = restaurantes_table.get_item(
+        response_restaurante = restaurantes_table.query(
             KeyConditionExpression =Key('Localidad').eq(localidad) & Key('Categoria#Nombre_restaurant').eq(f"{categoria}#{nombre_restaurant}"),
             FilterExpression=Attr('ID_Usuario').eq(id_usuario))
 
