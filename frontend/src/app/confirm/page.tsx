@@ -1,9 +1,10 @@
 'use client';
-import { useState, useEffect } from "react";
+import { useState, useEffect, Suspense } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { confirmSignUp } from "@/lib/authService";
 
-const ConfirmUserPage = () => {
+// Separate component for the form content
+const ConfirmForm = () => {
     const router = useRouter();
     const searchParams = useSearchParams();
     const [email, setEmail] = useState('');
@@ -78,6 +79,22 @@ const ConfirmUserPage = () => {
                 </form>
             </div>
         </div>
+    );
+};
+
+// Loading component
+const Loading = () => (
+    <div className="min-h-screen flex items-center justify-center bg-gray-50">
+        <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-indigo-600"></div>
+    </div>
+);
+
+// Main component wrapped with Suspense
+const ConfirmUserPage = () => {
+    return (
+        <Suspense fallback={<Loading />}>
+            <ConfirmForm />
+        </Suspense>
     );
 };
 

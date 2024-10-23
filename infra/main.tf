@@ -110,27 +110,106 @@ resource "aws_s3_bucket_policy" "frontend_bucket_policy" {
   })
   depends_on = [aws_s3_bucket_public_access_block.frontend_bucket_public_access]
 }
+# Create Cognito User Pool
+resource "aws_cognito_user_pool" "my_user_pool" {
+  name = "userpool-booktable"  # Set your desired pool name
+
+  # Sign-in options
+  username_attributes = ["email"]
+  auto_verified_attributes = ["email"] 
+
+  # Multi-factor authentication (MFA) settings
+  mfa_configuration = "OPTIONAL"  # MFA is optional
+
+  # Enable authenticator app for MFA (no SMS)
+  software_token_mfa_configuration {
+    enabled = true
+  }
+
+  # Account recovery settings
+  account_recovery_setting {
+    recovery_mechanism {
+      name     = "verified_email"  # Use email only for recovery
+      priority = 1  # Priority set to email
+    }
+  }
+
+  # Self-registration setting
+  admin_create_user_config {
+    allow_admin_create_user_only = false  # Enable self-registration
+  }
+
+
+  # Verify original attribute value when an update is pending
+  user_attribute_update_settings {
+    attributes_require_verification_before_update = ["email"]
+  }
+
+  # Define custom attributes
+  schema {
+    attribute_data_type = "String"
+    name     = "userType" 
+    developer_only_attribute = false
+    required                 = false
+    mutable                  = true  # Data type for the attribute
+    string_attribute_constraints {}
+  }
+
+  # Email provider configuration
+  email_configuration {
+    email_sending_account = "COGNITO_DEFAULT"  # Use Cognito as the email provider
+  }
+
+}
+
+resource "aws_cognito_user_pool_client" "react_client" {
+  
+  name         = "react-client"
+  user_pool_id = aws_cognito_user_pool.my_user_pool.id
+
+  explicit_auth_flows = [
+    "ALLOW_REFRESH_TOKEN_AUTH",
+    "ALLOW_USER_PASSWORD_AUTH",
+    "ALLOW_USER_SRP_AUTH"
+  ]
+
+  prevent_user_existence_errors = "ENABLED"
+  generate_secret = false  # Don't generate a client secret
+    
+  depends_on = [ aws_cognito_user_pool.my_user_pool ]
+
+}
 
 # Null resource for building and deploying frontend
 resource "null_resource" "frontend_deployment" {
   triggers = {
     api_gateway_url = aws_api_gateway_deployment.my_api_deployment.invoke_url
     file_hash       = data.archive_file.frontend.output_base64sha256
+    user_pool_id    = aws_cognito_user_pool.my_user_pool.id,
+    client_id = aws_cognito_user_pool_client.react_client.id
+    build_number    = timestamp() 
   }
 
   provisioner "local-exec" {
     command = <<EOT
       cd ${path.module}/../frontend
       echo "NEXT_PUBLIC_BACKEND_URL=${aws_api_gateway_deployment.my_api_deployment.invoke_url}" > .env
+      echo "NEXT_PUBLIC_AWS_REGION=us-east-1" >> .env
+      echo "NEXT_PUBLIC_COGNITO_USER_POOL_ID=${aws_cognito_user_pool.my_user_pool.id}" >> .env
+      echo "NEXT_PUBLIC_COGNITO_CLIENT_ID=${aws_cognito_user_pool_client.react_client.id}" >> .env
+      rm -rf out/
       npm run build
-      aws s3 sync out s3://${aws_s3_bucket.frontend_bucket.id} --delete
+      aws s3 rm s3://${aws_s3_bucket.frontend_bucket.id} --recursive
+      aws s3 sync out s3://${aws_s3_bucket.frontend_bucket.id}
     EOT
   }
 
   depends_on = [
     aws_api_gateway_deployment.my_api_deployment,
     aws_s3_bucket.frontend_bucket,
-    aws_s3_bucket_policy.frontend_bucket_policy
+    aws_s3_bucket_policy.frontend_bucket_policy,
+    aws_cognito_user_pool.my_user_pool,
+    aws_cognito_user_pool_client.react_client,
   ]
 }
 #############################
