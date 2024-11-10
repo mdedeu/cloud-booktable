@@ -7,6 +7,7 @@ interface MesaData {
     localidad: string;
     nombre_restaurant: string;
     capacidad: string;
+    id_usuario: string;
 }
 
 interface RestaurantData {
@@ -80,8 +81,7 @@ export default function Home() {
                 id_usuario: decodedToken.email
             }));
 
-            setMesaData({...mesaData, id_usuario: decodedToken.email});
-
+            setMesaData(prev => ({...prev, id_usuario: decodedToken.email}));
         }
 
         if (process.env.NEXT_PUBLIC_BACKEND_URL) {
