@@ -1,9 +1,3 @@
-# Set de la lista de metodos HTTP para eliminar duplicados
-locals {
-  http_methods_set = toset(keys(var.methods))
-  allowed_methods = join(",", concat(keys(var.methods), ["OPTIONS"]))
-}
-
 # Crear metodo de API Gateway para cada metodo respectivamente
 resource "aws_api_gateway_method" "resource_method" {
   for_each      = local.http_methods_set

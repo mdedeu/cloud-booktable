@@ -1,13 +1,10 @@
-#############################
-# Cognito
-#############################
 
-# User pool
-resource "aws_cognito_user_pool" "my_user_pool" {
-  name = "userpool-booktable"  
+# modules/cognito/main.tf
+resource "aws_cognito_user_pool" "user_pool" {
+  name = var.user_pool_name
 
-  username_attributes = ["email"]
-  auto_verified_attributes = ["email"] 
+  username_attributes      = ["email"]
+  auto_verified_attributes = ["email"]
 
   mfa_configuration = "OPTIONAL"
 
@@ -31,24 +28,22 @@ resource "aws_cognito_user_pool" "my_user_pool" {
   }
 
   schema {
-    attribute_data_type = "String"
-    name     = "userType" 
+    attribute_data_type      = "String"
+    name                     = "userType"
     developer_only_attribute = false
     required                 = false
-    mutable                  = true
+    mutable                 = true
     string_attribute_constraints {}
   }
 
   email_configuration {
     email_sending_account = "COGNITO_DEFAULT"
   }
-
 }
 
-resource "aws_cognito_user_pool_client" "react_client" {
-  
-  name         = "react-client"
-  user_pool_id = aws_cognito_user_pool.my_user_pool.id
+resource "aws_cognito_user_pool_client" "client" {
+  name         = var.client_name
+  user_pool_id = aws_cognito_user_pool.user_pool.id
 
   explicit_auth_flows = [
     "ALLOW_REFRESH_TOKEN_AUTH",
@@ -57,8 +52,5 @@ resource "aws_cognito_user_pool_client" "react_client" {
   ]
 
   prevent_user_existence_errors = "ENABLED"
-  generate_secret = false
-    
-  depends_on = [ aws_cognito_user_pool.my_user_pool ]
-
+  generate_secret              = false
 }
