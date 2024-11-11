@@ -2,9 +2,28 @@ import boto3
 import json
 
 dynamodb = boto3.resource('dynamodb')
+sns = boto3.client('sns')
+
+def get_topic_arn(topic_name):
+    sns = boto3.client('sns')
+    topics = sns.list_topics()['Topics']
+    for topic in topics:
+        if topic['TopicArn'].split(':')[-1] == topic_name:
+            return topic['TopicArn']
+    return None
+
+def format_restaurant_message(restaurant_data):
+    return f"""
+¡Nuevo restaurante creado exitosamente!
+
+Detalles del restaurante:
+Nombre: {restaurant_data['nombre_restaurant']}
+Localidad: {restaurant_data['localidad']}
+Categoría: {restaurant_data['categoria']}
+ID Usuario Creador: {restaurant_data['id_usuario']}
+"""
 
 def admin_crear_restaurant(event, context):
-
     try:
         # Analizar el cuerpo de la solicitud
         body = json.loads(event.get('body', '{}'))
@@ -84,6 +103,27 @@ def admin_crear_restaurant(event, context):
     
     try:
         restaurant_table.put_item(Item=nuevo_restaurant)
+        
+        # Enviar notificación SNS
+        try:
+            topic_arn = get_topic_arn('restaurant-creation-notifications')
+            if topic_arn:
+                restaurant_details = {
+                    'nombre_restaurant': nombre_restaurant,
+                    'localidad': localidad,
+                    'categoria': categoria,
+                    'id_usuario': id_usuario
+                }
+                
+                sns.publish(
+                    TopicArn=topic_arn,
+                    Message=format_restaurant_message(restaurant_details),
+                    Subject=f'Nuevo Restaurante Creado - {nombre_restaurant}'
+                )
+        except Exception as e:
+            print(f"Error sending SNS notification: {str(e)}")
+            # Don't return error - restaurant was created successfully
+            
     except Exception as e:
         return {
             'statusCode': 500,

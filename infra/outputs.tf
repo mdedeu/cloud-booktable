@@ -15,3 +15,11 @@ output "s3_bucket_name" {
 output "website_url" {
   value = "http://${aws_s3_bucket.frontend_bucket.bucket}.s3-website-${data.aws_region.current.name}.amazonaws.com"
 }
+
+output "restaurant_topic_arn" {
+  value = aws_sns_topic.restaurant_notifications.arn
+}
+
+output "reservation_topic_arn" {
+  value = aws_sns_topic.reservation_notifications.arn
+}

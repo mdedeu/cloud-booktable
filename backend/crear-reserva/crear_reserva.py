@@ -4,6 +4,34 @@ import json
 from datetime import datetime, timedelta
 
 dynamodb = boto3.resource('dynamodb')
+sns = boto3.client('sns')
+
+
+def get_topic_arn(topic_name):
+    sns = boto3.client('sns')
+    topics = sns.list_topics()['Topics']
+    for topic in topics:
+        if topic['TopicArn'].split(':')[-1] == topic_name:
+            return topic['TopicArn']
+    return None
+
+def format_reservation_message(reservation_data):
+    return f"""
+¡Tu reserva ha sido confirmada!
+
+Detalles de la reserva:
+Restaurante: {reservation_data['nombre_restaurant']}
+Localidad: {reservation_data['localidad']}
+Categoría: {reservation_data['categoria']}
+Fecha y Hora: {reservation_data['fecha_hora']}
+Mesa: {reservation_data['table_id']}
+Comensales: {reservation_data['comensales']}
+Reservado por: {reservation_data['user_name']}
+
+¡Gracias por elegirnos!
+"""
+
+
 
 def crear_reserva(event, context):
     try:
@@ -215,7 +243,35 @@ def crear_reserva(event, context):
                     'Access-Control-Allow-Methods': 'OPTIONS,POST'
                 }
             }
-        
+        # Send SNS notification
+        try:
+            topic_arn = get_topic_arn('reservation-notifications')
+            if topic_arn:
+                reservation_details = {
+                    'nombre_restaurant': nombre_restaurant,
+                    'localidad': localidad,
+                    'categoria': categoria,
+                    'fecha_hora': fecha_hora_gmt3,
+                    'table_id': table_id,
+                    'comensales': comensales,
+                    'user_name': user_name
+                }
+                
+                sns.publish(
+                    TopicArn=topic_arn,
+                    Message=format_reservation_message(reservation_details),
+                    Subject=f'Confirmación de Reserva - {nombre_restaurant}',
+                    MessageAttributes={
+                        'email': {
+                            'DataType': 'String',
+                            'StringValue': user_email
+                        }
+                    }
+                )
+        except Exception as e:
+            print(f"Error sending SNS notification: {str(e)}")
+            # Don't return error - reservation was successful
+      
         return {
             'statusCode': 200,
             'body': json.dumps(f"Reserva creada exitosamente en la mesa {table_id} para {user_name}."),
