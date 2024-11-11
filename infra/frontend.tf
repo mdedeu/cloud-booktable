@@ -1,9 +1,12 @@
 #############################
 # S3 Bucket
 #############################
+resource "random_id" "bucket_suffix" {
+  byte_length = 4
+}
 
 resource "aws_s3_bucket" "frontend_bucket" {
-  bucket = "frontend-bucket-cloudbooktable-marcos"
+  bucket = local.bucket_name
 
   tags = {
     Name        = "Frontend Bucket"
