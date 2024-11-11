@@ -110,6 +110,10 @@ Antes de ejecutar Terraform, asegúrate de tener lo siguiente configurado:
 3. **Configuración de AWS CLI:** Se debe configurar las credenciales de AWS utilizando  AWS CLI. Si no lo tenes instalado, descargarlo e instalarlo desde [AWS CLI](https://aws.amazon.com/cli/). Una vez instalado, ejecutar el siguiente comando para ingresar tus credenciales:  
    `aws configure`  
 4. **Instalación de Next.js:** Para instalar Next.js, hay que asegurarse de tener Node.js y npm (Node Package Manager) instalados. Puedes verificar si están instalados ejecutando `node --version` y `npm --version` en tu terminal. Si no pudiste, revisa este [link](https://nextjs.org/docs/getting-started/installation).  
+`sudo apt update && sudo apt upgrade -y`
+`sudo apt install nodejs npm -y`
+`sudo npm install -g next`
+
 5. **Clonar el Proyecto:**  
    Asegúrate de tener el repositorio del proyecto en tu entorno local. Si no lo tenes, clonarlo utilizando Git:  
    `git clone https://github.com/itba-cloud/2024Q2-G4.git`  
