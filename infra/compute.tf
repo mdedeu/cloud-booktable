@@ -44,4 +44,5 @@ module "my_lambdas" {
   lambda_role_arn  = data.aws_iam_role.labrole.arn
   vpc_subnets      = module.vpc.private_subnets
   security_groups  = [aws_security_group.lambda_sg.id]
+  functions_runtime = "python3.12"
 }

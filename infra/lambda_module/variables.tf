@@ -21,3 +21,7 @@ variable "security_groups" {
   description = "Security groups para las Lambdas de la VPC"
   type        = list(string)
 }
+variable "functions_runtime" {
+  description = "Runtime"
+  type = string
+}

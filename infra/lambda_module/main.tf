@@ -3,7 +3,7 @@ resource "aws_lambda_function" "this" {
 
   function_name = each.value.name
   handler       = "${each.key}.${each.key}"
-  runtime       = "python3.12"
+  runtime       = var.functions_runtime
   filename      = each.value.code
   source_code_hash = each.value.source_code_hash
 
