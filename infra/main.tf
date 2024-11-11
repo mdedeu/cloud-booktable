@@ -64,7 +64,7 @@ resource "aws_vpc_endpoint" "dynamodb" {
 #############################
 
 resource "aws_s3_bucket" "frontend_bucket" {
-  bucket = "frontend-bucket-cloudbooktable-grupo4"
+  bucket = "frontend-bucket-cloudbooktable-marcos"
 
   tags = {
     Name        = "Frontend Bucket"
@@ -288,6 +288,7 @@ module "my_lambdas" {
   vpc_subnets      = module.vpc.private_subnets
   security_groups  = [aws_security_group.lambda_sg.id]
 }
+
 
 #############################
 # API Gateway
