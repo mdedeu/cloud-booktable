@@ -19,7 +19,3 @@ output "website_url" {
 output "restaurant_topic_arn" {
   value = aws_sns_topic.restaurant_notifications.arn
 }
-
-output "reservation_topic_arn" {
-  value = aws_sns_topic.reservation_notifications.arn
-}

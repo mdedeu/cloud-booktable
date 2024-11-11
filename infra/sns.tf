@@ -33,10 +33,6 @@ resource "aws_sns_topic" "restaurant_notifications" {
   name = "restaurant-creation-notifications"
 }
 
-resource "aws_sns_topic" "reservation_notifications" {
-  name = "reservation-notifications"
-}
-
 resource "aws_sns_topic_policy" "restaurant_notifications" {
   arn = aws_sns_topic.restaurant_notifications.arn
 
@@ -53,27 +49,6 @@ resource "aws_sns_topic_policy" "restaurant_notifications" {
           "SNS:Subscribe"
         ]
         Resource = aws_sns_topic.restaurant_notifications.arn
-      }
-    ]
-  })
-}
-
-resource "aws_sns_topic_policy" "reservation_notifications" {
-  arn = aws_sns_topic.reservation_notifications.arn
-
-  policy = jsonencode({
-    Version = "2012-10-17"
-    Statement = [
-      {
-        Effect = "Allow"
-        Principal = {
-          AWS = data.aws_iam_role.labrole.arn
-        }
-        Action = [
-          "SNS:Publish",
-          "SNS:Subscribe"
-        ]
-        Resource = aws_sns_topic.reservation_notifications.arn
       }
     ]
   })
