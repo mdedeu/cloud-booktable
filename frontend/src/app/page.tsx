@@ -20,6 +20,11 @@ interface DeleteReservaData {
   time: string;
 }
 
+interface SearchData {
+  localidad: string;
+  categoria: string;
+}
+
 export default function Home() {
   const [backendUrl, setBackendUrl] = useState('http://localhost:3000');
   const [userEmail, setUserEmail] = useState('');
@@ -37,13 +42,16 @@ export default function Home() {
     email: ''
   });
 
-
   const [deleteReservaData, setDeleteReservaData] = useState<DeleteReservaData>({
     user_id: '',
     date: '',
     time: ''
   });
 
+  const [searchData, setSearchData] = useState<SearchData>({
+    localidad: '',
+    categoria: ''
+  });
 
   const [result, setResult] = useState('');
   const router = useRouter();
@@ -195,6 +203,34 @@ export default function Home() {
     }
   };
 
+  const handleSearch = async () => {
+    try {
+      const queryParams = new URLSearchParams();
+
+      if (searchData.localidad) {
+        queryParams.append('localidad', searchData.localidad);
+      }
+
+      if (searchData.categoria) {
+        queryParams.append('categoria', searchData.categoria);
+      }
+
+      const response = await fetch(`${backendUrl}/restaurantes?${queryParams.toString()}`, {
+        headers: getAuthHeaders()
+      });
+
+      if (response.status === 401) {
+        handleLogout();
+        return;
+      }
+
+      const data = await response.json();
+      setResult(JSON.stringify(data, null, 2));
+    } catch (error) {
+      setResult('Error: ' + (error as Error).message);
+    }
+  };
+
   return (
       <div className="container mx-auto p-4">
         <div className="flex justify-between items-center mb-4">
@@ -213,12 +249,49 @@ export default function Home() {
         </div>
 
         <h2 className="text-2xl font-bold mb-4">Clientes</h2>
+
+        {/* Search Section */}
+        <div className="mb-8">
+          <h2 className="text-xl font-semibold mb-2">Search Restaurants</h2>
+          <div className="space-y-2">
+            <input
+              type="text"
+              placeholder="Localidad"
+              value={searchData.localidad}
+              onChange={(e) => setSearchData({...searchData, localidad: e.target.value})}
+              className="w-full p-2 border rounded text-black"
+            />
+            <input
+              type="text"
+              placeholder="Categoría"
+              value={searchData.categoria}
+              onChange={(e) => setSearchData({...searchData, categoria: e.target.value})}
+              className="w-full p-2 border rounded text-black"
+            />
+            <button
+              onClick={handleSearch}
+              className="w-full p-2 bg-blue-500 text-white rounded hover:bg-blue-600"
+            >
+              Search Restaurants
+            </button>
+          </div>
+        </div>
+
+        {/* Display Results */}
+        <div className="mt-8 mb-8">
+          <h2 className="text-xl font-semibold mb-2">Result</h2>
+          <pre className="bg-gray-100 p-4 rounded overflow-x-auto text-black whitespace-pre-wrap">
+          {result}
+        </pre>
+        </div>
+
+        {/* Existing Create Reserva Section */}
         <div className="mb-8">
           <h2 className="text-xl font-semibold mb-2">Create Reserva</h2>
           <form onSubmit={handleReservaSubmit} className="space-y-2">
             <input
                 type="text"
-                placeholder="Location"
+                placeholder="Localidad"
                 value={reservaData.localidad}
                 onChange={(e) => setReservaData({...reservaData, localidad: e.target.value})}
                 className="w-full p-2 border rounded text-black"
@@ -268,6 +341,8 @@ export default function Home() {
             </button>
           </form>
         </div>
+
+        {/* Result Section (shared) */}
         <div className="mt-8 mb-8">
           <h2 className="text-xl font-semibold mb-2">Result</h2>
           <pre className="bg-gray-100 p-4 rounded overflow-x-auto text-black whitespace-pre-wrap">
@@ -275,6 +350,7 @@ export default function Home() {
         </pre>
         </div>
 
+        {/* Existing Get Reservas Section */}
         <div className="mb-8">
           <h2 className="text-xl font-semibold mb-2">My Reservas</h2>
           <button
@@ -284,6 +360,8 @@ export default function Home() {
             Get My Reservas
           </button>
         </div>
+
+        {/* Result Section (shared) */}
         <div className="mt-8 mb-8">
           <h2 className="text-xl font-semibold mb-2">Result</h2>
           <pre className="bg-gray-100 p-4 rounded overflow-x-auto text-black whitespace-pre-wrap">
@@ -291,6 +369,7 @@ export default function Home() {
         </pre>
         </div>
 
+        {/* Existing Delete Reserva Section */}
         <div className="mb-8">
           <h2 className="text-xl font-semibold mb-2">Delete Reserva</h2>
           <div className="space-y-2">
@@ -319,6 +398,7 @@ export default function Home() {
           </div>
         </div>
 
+        {/* Result Section (shared) */}
         <div className="mt-8 mb-8">
           <h2 className="text-xl font-semibold mb-2">Result</h2>
           <pre className="bg-gray-100 p-4 rounded overflow-x-auto text-black whitespace-pre-wrap">

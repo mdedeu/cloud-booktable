@@ -15,6 +15,13 @@ resource "aws_api_gateway_resource" "reservas" {
   path_part   = "reservas"
 }
 
+# Recurso API Gateway para "/restaurantes"
+resource "aws_api_gateway_resource" "restaurantes" {
+  rest_api_id = aws_api_gateway_rest_api.my_api.id
+  parent_id   = aws_api_gateway_rest_api.my_api.root_resource_id
+  path_part   = "restaurantes"
+}
+
 
 # Recurso API Gateway para "/admin"
 resource "aws_api_gateway_resource" "admin" {
@@ -62,6 +69,27 @@ module "reserva" {
   lambdaName  = "Reserva"
   depends_on = [ 
    aws_api_gateway_resource.reservas,
+   aws_api_gateway_rest_api.my_api,
+   module.my_lambdas.lambda_functions
+  ]
+}
+
+module "restaurantes" {
+  source = "./api_gateway_cors"
+
+  rest_api = {
+    id            = "${aws_api_gateway_rest_api.my_api.id}"
+    execution_arn = "${aws_api_gateway_rest_api.my_api.execution_arn}"
+  }
+  resource_id    = aws_api_gateway_resource.restaurantes.id
+  methods   = {
+    GET = module.my_lambdas.lambda_functions["buscar_restaurant"]
+  }
+  path        = "restaurantes"
+  stage       = "prod"
+  lambdaName  = "BuscarRestaurant"
+  depends_on = [ 
+   aws_api_gateway_resource.restaurantes,
    aws_api_gateway_rest_api.my_api,
    module.my_lambdas.lambda_functions
   ]
@@ -140,7 +168,8 @@ resource "aws_api_gateway_deployment" "my_api_deployment" {
     module.reserva, 
     module.admin_mesas,
     module.admin_reservas,
-    module.admin_restaurant
+    module.admin_restaurant,
+    module.restaurantes
   ]
   rest_api_id = aws_api_gateway_rest_api.my_api.id
   stage_name  = "prod"
@@ -150,7 +179,8 @@ resource "aws_api_gateway_deployment" "my_api_deployment" {
       module.reserva, 
       module.admin_mesas,
       module.admin_reservas,
-      module.admin_restaurant
+      module.admin_restaurant,
+      module.restaurantes
     ]))
   }
 

@@ -37,6 +37,12 @@ data "archive_file" "admin_obtener_reservas_zip" {
   output_path = "${path.module}/../backend/admin-obtener-reservas/admin_obtener_reservas.zip"
 }
 
+data "archive_file" "buscar_restaurant_zip" {
+  type        = "zip"
+  source_dir  = "${path.module}/../backend/buscar-restaurant"
+  output_path = "${path.module}/../backend/buscar-restaurant/buscar_restaurant.zip"
+}
+
 data "archive_file" "frontend" {
   type        = "zip"
   source_dir  = "${path.module}/../frontend"

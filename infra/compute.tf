@@ -39,6 +39,11 @@ module "my_lambdas" {
       code = data.archive_file.admin_obtener_reservas_zip.output_path
       source_code_hash = data.archive_file.admin_obtener_reservas_zip.output_base64sha256
     }
+    buscar_restaurant = {
+      name = "BuscarRestaurantLambda"
+      code = data.archive_file.buscar_restaurant_zip.output_path
+      source_code_hash = data.archive_file.buscar_restaurant_zip.output_base64sha256
+    }
   }
 
   lambda_role_arn  = data.aws_iam_role.labrole.arn
